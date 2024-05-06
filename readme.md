@@ -1,16 +1,30 @@
-Keren is UI Web Framework for Golang built on top of HTMX
+                                   # Keren: UI Web Framework for Golang 🚀
 
+Keren is a UI Web Framework for Golang built on top of HTMX. 🌐
 
+## Example: Login Form 🔐
 
-```
+```go
 func Login(app *app.Root) app.Root {
-    input_name := app.Input().Attribute("type", "text").Class("form-control", "mb-2")
+    inputName := app.Input().Attribute("type", "text").Class("form-control", "mb-2")
+
     form := app.Form(
-        input_name
-    ).OnSubmit(func (event *keren.Event) *Element {
-        return app.Alert('Hello' + input_name.Value)
+        inputName,
+    ).OnSubmit(func(event keren.Event) keren.Element {
+        return app.Alert('Hello ' + inputName.Value)
     })
+
     return app.Container(
-       form
+        form,
     )
 }
+```
+
+### Getting Started 🏁
+// TODO: Add instructions for installation and setup
+### Documentation 📚
+// TODO: Add links to documentation or additional examples
+### Contributing 🤝
+// TODO: Add guidelines for contributing to the project
+### License 📄
+// TODO: Add information about the project's license
