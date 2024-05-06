@@ -1,8 +1,10 @@
-    # Keren: UI Web Framework for Golang 🚀
+# Keren: UI Web Framework for Golang 🚀
 
-Keren is a UI Web Framework for Golang built on top of HTMX. 🌐
+Keren is a UI Web Framework for Golang built on top of HTMX. 🌐 It allows you to create dynamic and interactive web applications with ease.
+## Examples
+### Hello World Form 🔐
 
-## Example: Hello World Form 🔐
+This example demonstrates how to create a simple "Hello World" form using Keren:
 
 ```go
 func Hello(app *keren.Root, ctx *fiber.Ctx) error {
@@ -27,11 +29,38 @@ func Hello(app *keren.Root, ctx *fiber.Ctx) error {
 }
 
 ```
-![Hello World](https://github.com/erlanggatampan/keren/blob/main/image/readme/1715015245996.png)
 
+![Hello World](https://github.com/erlanggatampan/keren/blob/main/image/readme/1715015245996.png)
+## Keren UI 🚀
 ### Getting Started 🏁
 
 // TODO: Add instructions for installation and setup
+
+1. Install Keren 🚀
+
+```
+go get github.com/erlanggatampan/keren
+```
+
+2. Add HTMX And Bootstrap To Your CSS 📦
+3. Add Additional Scripts on your HTML
+
+```html
+<script>
+    document.body.addEventListener('htmx:configRequest', (evt) => {
+        evt.detail.headers['Hx-Page-Id'] = '{{ .PageID }}'
+        if (evt.detail.triggeringEvent) {
+            evt.detail.headers['Hx-Event'] = evt.detail.triggeringEvent.type
+
+        }
+    })
+</script>
+```
+
+### Todo
+
+* [ ] Bootstrap Component
+* [ ] Mobile Response UI Component
 
 ### Documentation 📚
 
@@ -39,8 +68,8 @@ func Hello(app *keren.Root, ctx *fiber.Ctx) error {
 
 ### Contributing 🤝
 
-// TODO: Add guidelines for contributing to the project
+Please help me by creating a pull request
 
 ### License 📄
 
-// TODO: Add information about the project's license
+MIT
