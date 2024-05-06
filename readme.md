@@ -27,6 +27,7 @@ func Hello(app *keren.Root, ctx *fiber.Ctx) error {
 }
 
 ```
+![Hello World](https://github.com/erlanggatampan/keren/blob/main/image/readme/1715015245996.png)
 
 ### Getting Started 🏁
 
