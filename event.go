@@ -1,4 +1,4 @@
-package ui
+package keren
 
 type EventHandler struct {
 	Event    string

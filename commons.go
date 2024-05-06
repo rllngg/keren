@@ -1,4 +1,4 @@
-package ui
+package keren
 
 func (root *Root) Button(text string) *Element {
 	button := NewElement(root, "button").SetInnerHTML(text)

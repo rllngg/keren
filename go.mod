@@ -1,4 +1,4 @@
-module github.com/erlanggaganteeeng/godin
+module github.com/erlanggatampan/keren
 
 go 1.22.0
 

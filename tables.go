@@ -1,4 +1,4 @@
-package ui
+package keren
 
 type Pageable struct {
 	PageCurrent int

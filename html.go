@@ -1,4 +1,4 @@
-package ui
+package keren
 
 func BuildHTML(root *Root) string {
 	return HTMLTag(root.Body)
