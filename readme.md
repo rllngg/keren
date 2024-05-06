@@ -2,10 +2,10 @@
 
 Keren is a UI Web Framework for Golang built on top of HTMX. 🌐
 
-## Example: Login Form 🔐
+## Example: Hello World Form 🔐
 
 ```go
-func Login(app *app.Root) app.Root {
+func Hello(app *app.Root) app.Root {
     inputName := app.Input().Attribute("type", "text").Class("form-control", "mb-2")
 
     form := app.Form(
