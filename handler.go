@@ -2,6 +2,7 @@ package keren
 
 import (
 	"net/url"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -9,12 +10,19 @@ import (
 
 var pages = make(map[string]*Root)
 
+func DetectDevice(agent string) string {
+	if strings.Contains(agent, "Mobile") {
+		return "mobile"
+	}
+	return "desktop"
+
+}
 func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if c.Method() == "GET" {
 
 			id := uuid.New().String()
-			pages[id] = NewRoot()
+			pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
 			handler(pages[id], c)
 			output := BuildHTML(pages[id])
 
@@ -64,6 +72,10 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 
 			// Trigger the event on the root object and retrieve the event output
 			eventOutput := root.TriggerEvent(elementID, event)
+			if len(root.PendingEvent) > 0 {
+				c.Set("HX-Trigger", strings.Join(root.PendingEvent, ","))
+				root.PendingEvent = []string{}
+			}
 			c.Set("HX-Retarget", "body")
 			c.Set("HX-Reswap", "outerHTML")
 			if eventOutput != nil {

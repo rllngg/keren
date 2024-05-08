@@ -1,7 +1,8 @@
 package keren
 
-func (root *Root) Button(text string) *Element {
-	button := NewElement(root, "button").SetInnerHTML(text)
+func (root *Root) Button(text string, variant string) *Element {
+	button := NewElement(root, "button").Class("btn").Class("btn-" + variant).SetInnerHTML(text)
+
 	return button
 }
 func (root *Root) Input(htmlType string, name string, placeholder string) *Element {
@@ -52,7 +53,7 @@ func (root *Root) Span(text string) *Element {
 	span := NewElement(root, "span").SetInnerHTML(text)
 	return span
 }
-func (root *Root) A(text string, href string) *Element {
+func (root *Root) Link(text string, href string) *Element {
 	a := NewElement(root, "a").SetInnerHTML(text).Attribute("href", href)
 	return a
 }
@@ -69,6 +70,9 @@ func (root *Root) Ol(children ...*Element) *Element {
 func (root *Root) Li(children ...*Element) *Element {
 	return NewElement(root, "li").AppendChildren(children...)
 }
+func (root *Root) NavItem(children ...*Element) *Element {
+	return NewElement(root, "li").Class("nav-item").AppendChildren(children...)
+}
 
 // div
 func (root *Root) Div(children ...*Element) *Element {
@@ -78,7 +82,7 @@ func (root *Root) Div(children ...*Element) *Element {
 // table
 
 func (root *Root) Table(children ...*Element) *Element {
-	return NewElement(root, "table").AppendChildren(children...)
+	return NewElement(root, "table").Class("table").AppendChildren(children...)
 }
 func (root *Root) Thead(children ...*Element) *Element {
 	return NewElement(root, "thead").AppendChildren(children...)
@@ -94,4 +98,38 @@ func (root *Root) Th(text string) *Element {
 }
 func (root *Root) Td(children ...*Element) *Element {
 	return NewElement(root, "td").AppendChildren(children...)
+}
+
+func (root *Root) Card(children ...*Element) *Element {
+	return NewElement(root, "div").Class("card").AppendChildren(children...)
+}
+func (root *Root) CardBody(children ...*Element) *Element {
+	return NewElement(root, "div").Class("card-body").AppendChildren(children...)
+}
+func (root *Root) Row(children ...*Element) *Element {
+	return NewElement(root, "div").Class("row").AppendChildren(children...)
+}
+func (root *Root) ContainerFluid(children ...*Element) *Element {
+	return NewElement(root, "div").Class("container-fluid").AppendChildren(children...)
+}
+func (root *Root) Btn(children ...*Element) *Element {
+	return NewElement(root, "button")
+}
+func (root *Root) Nav(children ...*Element) *Element {
+	return NewElement(root, "nav")
+}
+func (root *Root) Navbar(brand *Element, children ...*Element) *Element {
+	nav := root.Nav().Class("navbar navbar-expand-lg bg-body-tertiary")
+	navBrand := root.ContainerFluid(brand)
+	navbarCollapse := root.Div(
+		children...,
+	).Class("collapse navbar-collapse")
+	mobileBtn := root.Btn(root.Span("").Class("navbar-toggler-icon")).Class("navbar-toggler").Attr("data-bs-toggle", "collapse").Attr("data-bs-target", "#"+navbarCollapse.ID).Attr("aria-controls", "navbarSupportedContent").Attr("aria-expanded", "false").Attr("aria-label", "Toggle navigation").Append(root.Span("").Class("navbar-toggler-icon"))
+	return nav.AppendChildren(
+		root.ContainerFluid(
+			navBrand,
+			mobileBtn,
+			navbarCollapse,
+		),
+	)
 }

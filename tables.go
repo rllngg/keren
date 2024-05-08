@@ -50,7 +50,8 @@ func (table *DataTable) Body(body *Element) *Element {
 	}
 	return body
 }
-func (table *DataTable) Element() *Element {
+
+func (table *DataTable) Element(triggerName string) *Element {
 	// create table
 	theadElement := table.Root.Thead()
 	for _, column := range table.Columns {
@@ -63,6 +64,13 @@ func (table *DataTable) Element() *Element {
 		theadElement,
 		tbodyElement,
 	)
+	ReloadTable := func() *Element {
+		// filter
+		table.QueryResult = table.OnQuery(*table.Page)
+		// create table
+		table.Body(tbodyElement)
+		return tbodyElement
+	}
 	search_input := table.Root.Input("text", "search", "Search...").OnChange(func(e *Event) *Element {
 		// search
 		search := e.Element.Value
@@ -70,16 +78,15 @@ func (table *DataTable) Element() *Element {
 			return tableElement
 		}
 		table.Filter = search
-		// filter
-		table.QueryResult = table.OnQuery(*table.Page)
-		// create table
-		table.Body(tbodyElement)
-		return tbodyElement
+
+		return ReloadTable()
 	})
 	div := table.Root.Div(
 		search_input,
 		tableElement,
-	)
+	).OnEvent(triggerName, func(event *Event) *Element {
+		return ReloadTable()
+	})
 
 	return div
 }

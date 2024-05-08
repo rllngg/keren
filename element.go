@@ -46,6 +46,10 @@ func (elem *Element) SetInnerHTML(html string) *Element {
 	elem.TextContent = html
 	return elem
 }
+func (elem *Element) Trigger(name string) *Element {
+	elem.Root.PublishEvent(name)
+	return elem
+}
 func (elem *Element) Class(classes ...string) *Element {
 	elem.Classes = classes
 	return elem
@@ -55,6 +59,10 @@ func (elem *Element) Style(key string, value string) *Element {
 	return elem
 }
 func (elem *Element) Attribute(attribute string, value string) *Element {
+	(*elem.Attributes)[attribute] = value
+	return elem
+}
+func (elem *Element) Attr(attribute string, value string) *Element {
 	(*elem.Attributes)[attribute] = value
 	return elem
 }
@@ -68,7 +76,8 @@ func (elem *Element) SetEvent(event string, cb *func(event *Event) *Element) *El
 	// check if existing event
 	if !strings.Contains(allEvents, event) {
 		allEvents += " " + event
-		elem.Attribute("hx-trigger", allEvents)
+
+		elem.Attribute("hx-trigger", allEvents+" from:body")
 	}
 	// c.Changed = true
 
@@ -114,6 +123,9 @@ func (elem *Element) OnClick(cb func(event *Event) *Element) *Element {
 }
 func (elem *Element) OnChange(cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("change", &cb)
+}
+func (elem *Element) OnEvent(name string, cb func(event *Event) *Element) *Element {
+	return elem.SetEvent("event-"+name, &cb)
 }
 func (elem *Element) OnEvery(time int, cb func(event *Event) *Element) *Element {
 	elem.SetEvent("every "+strconv.Itoa(time), &cb)

@@ -1,28 +1,34 @@
 package keren
 
 import (
-	"fmt"
 	"math/rand"
 	"strings"
 )
 
 type Root struct {
-	Body       *Node
-	Additional *Node
-	Elements   *map[string]*Element
+	Body         *Node
+	Additional   *Node
+	Elements     *map[string]*Element
+	Device       string
+	PendingEvent []string
 }
 
-func NewRoot() *Root {
+func NewRoot(device string) *Root {
 	return &Root{
-		Body:       &Node{},
-		Additional: &Node{},
-		Elements:   &map[string]*Element{},
+		Body:         &Node{},
+		Additional:   &Node{},
+		Elements:     &map[string]*Element{},
+		Device:       device,
+		PendingEvent: []string{},
 	}
 }
 func Identifier() string {
 	// id_random
 	// random string 8
 	return "id-" + randomString(8, []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+}
+func (root *Root) PublishEvent(name string) {
+	root.PendingEvent = append(root.PendingEvent, "event-"+name)
 }
 func randomString(n int, alphabet []rune) string {
 
@@ -51,13 +57,11 @@ func (root *Root) UpdateValue(ID string, value string) {
 }
 func (root *Root) TriggerEvent(ID string, event string) *Element {
 	// search through
-	fmt.Println("Trigger", ID, event)
 	elem := root.GetElementById(ID)
 	if elem == nil {
 		return nil
 	}
 	eventHandler := (*elem.Events)[event]
-	fmt.Println("Event", eventHandler)
 	if eventHandler != nil {
 		return (*eventHandler.Callback)(&Event{
 			Name:    event,
@@ -69,10 +73,19 @@ func (root *Root) TriggerEvent(ID string, event string) *Element {
 func (root *Root) RegisterElement(elem *Element) {
 	(*root.Elements)[elem.ID] = elem
 }
-func (root *Root) Container(elem ...*Element) {
+func (root *Root) Container(elem ...*Element) error {
 	node := NewNode(NewElement(root, "div"))
 	for _, e := range elem {
 		node.Append(e)
 	}
 	root.Body = node
+	return nil
+}
+
+func (root *Root) IsMobile() bool {
+	return root.Device == "mobile"
+}
+
+func (root *Root) IsDesktop() bool {
+	return root.Device == "desktop"
 }
