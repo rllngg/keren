@@ -22,5 +22,6 @@ func main() {
 
 	fiber.Static("/static", "./static")
 	fiber.All("/", keren.FiberHandler(ui.Hello))
+	fiber.All("/todo", keren.FiberHandler(ui.Todo))
 	fiber.Listen(":3000")
 }

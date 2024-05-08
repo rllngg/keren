@@ -109,6 +109,9 @@ func (root *Root) CardBody(children ...*Element) *Element {
 func (root *Root) Row(children ...*Element) *Element {
 	return NewElement(root, "div").Class("row").AppendChildren(children...)
 }
+func (root *Root) Col(children ...*Element) *Element {
+	return NewElement(root, "div").Class("col").AppendChildren(children...)
+}
 func (root *Root) ContainerFluid(children ...*Element) *Element {
 	return NewElement(root, "div").Class("container-fluid").AppendChildren(children...)
 }
