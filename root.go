@@ -3,6 +3,8 @@ package keren
 import (
 	"math/rand"
 	"strings"
+
+	"github.com/valyala/fasthttp"
 )
 
 type Root struct {
@@ -55,7 +57,7 @@ func (root *Root) UpdateValue(ID string, value string) {
 	}
 
 }
-func (root *Root) TriggerEvent(ID string, event string) *Element {
+func (root *Root) TriggerEvent(ID string, event string, request *fasthttp.RequestCtx) *Element {
 	// search through
 	elem := root.GetElementById(ID)
 	if elem == nil {
@@ -66,6 +68,7 @@ func (root *Root) TriggerEvent(ID string, event string) *Element {
 		return (*eventHandler.Callback)(&Event{
 			Name:    event,
 			Element: elem,
+			Request: request,
 		})
 	}
 	return nil

@@ -1,14 +1,29 @@
 package keren
 
 func (root *Root) Button(text string, variant string) *Element {
-	button := NewElement(root, "button").Class("btn").Class("btn-" + variant).SetInnerHTML(text)
+	button := NewElement(root, "button").Class("btn btn-" + variant).SetInnerHTML(text)
 
 	return button
 }
 func (root *Root) Input(htmlType string, name string, placeholder string) *Element {
-	input := NewElement(root, "input").Attribute("type", htmlType).Attribute("placeholder", placeholder)
+	input := NewElement(root, "input").Attribute("type", htmlType).Attribute("placeholder", placeholder).Class("form-control my-2")
 	input.Attribute("name", input.ID)
 	return input
+}
+func (root *Root) TextInput(name string, placeholder string) *Element {
+	return root.Input("text", name, placeholder)
+}
+func (root *Root) PasswordInput(name string, placeholder string) *Element {
+	return root.Input("password", name, placeholder)
+}
+func (root *Root) Checkbox(name string, text string) *Element {
+	checkbox := root.Input("checkbox", name, text)
+	checkbox.Text(name)
+	checkbox.Class("")
+	return checkbox
+}
+func (root *Root) Break() *Element {
+	return NewElement(root, "br")
 }
 func (root *Root) Form(children ...*Element) *Element {
 	return NewElement(root, "form").AppendChildren(children...)
@@ -118,6 +133,9 @@ func (root *Root) ContainerFluid(children ...*Element) *Element {
 func (root *Root) Btn(children ...*Element) *Element {
 	return NewElement(root, "button")
 }
+func (root *Root) A(children ...*Element) *Element {
+	return NewElement(root, "a")
+}
 func (root *Root) Nav(children ...*Element) *Element {
 	return NewElement(root, "nav")
 }
@@ -135,4 +153,30 @@ func (root *Root) Navbar(brand *Element, children ...*Element) *Element {
 			navbarCollapse,
 		),
 	)
+}
+
+func (root *Root) Select(options [][]string) *Element {
+	selectElement := NewElement(root, "select")
+	for _, option := range options {
+		selectElement.AppendChildren(
+			root.Option(option[0], option[1]),
+		)
+	}
+	return selectElement.Attr("name", selectElement.ID)
+}
+func (root *Root) Option(value string, text string) *Element {
+	return NewElement(root, "option").Text(text).Attribute("value", value)
+}
+func (root *Root) TextArea(name string, placeholder string) *Element {
+	elem := NewElement(root, "textarea").Attribute("placeholder", placeholder)
+	elem.Attribute("name", elem.ID)
+	elem.Text(placeholder).Class("form-control")
+	return elem
+}
+
+func (root *Root) Label(text string) *Element {
+	return NewElement(root, "label").Text(text)
+}
+func (root *Root) FileInput() *Element {
+	return root.Input("file", "file", "")
 }

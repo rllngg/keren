@@ -11,6 +11,7 @@ type Element struct {
 	ID          string
 	Root        *Root
 	Tag         string
+	Name        string
 	Attributes  *map[string]string
 	Value       string
 	Children    []*Element
@@ -20,6 +21,7 @@ type Element struct {
 	TextContent string
 	Changed     bool
 	ShownLimit  int
+	Validation  string
 }
 
 func NewElement(root *Root, tag string) *Element {
@@ -35,6 +37,7 @@ func NewElement(root *Root, tag string) *Element {
 		Styles:     map[string]string{},
 		Changed:    true,
 		ShownLimit: -1,
+		Name:       "",
 	}
 	root.RegisterElement(elem)
 	return elem
@@ -46,6 +49,10 @@ func (elem *Element) SetInnerHTML(html string) *Element {
 	elem.TextContent = html
 	return elem
 }
+func (elem *Element) Text(text string) *Element {
+	elem.TextContent = text
+	return elem
+}
 func (elem *Element) Trigger(name string) *Element {
 	elem.Root.PublishEvent(name)
 	return elem
@@ -54,17 +61,45 @@ func (elem *Element) Class(classes ...string) *Element {
 	elem.Classes = classes
 	return elem
 }
+func (elem *Element) AddClass(class string) *Element {
+	elem.Classes = append(elem.Classes, class)
+	return elem
+}
+func (elem *Element) RemoveClass(class string) *Element {
+	for i, c := range elem.Classes {
+		if c == class {
+			elem.Classes = append(elem.Classes[:i], elem.Classes[i+1:]...)
+		}
+	}
+	return elem
+}
+func (elem *Element) Stylesheet(styles map[string]string) *Element {
+	elem.Styles = styles
+	return elem
+}
 func (elem *Element) Style(key string, value string) *Element {
 	elem.Styles[key] = value
 	return elem
 }
+func (elem *Element) RemoveStyle(key string) *Element {
+	delete(elem.Styles, key)
+	return elem
+}
+func (elem *Element) RemoveAttribute(attribute string) *Element {
+	delete(*elem.Attributes, attribute)
+	return elem
+}
+
 func (elem *Element) Attribute(attribute string, value string) *Element {
 	(*elem.Attributes)[attribute] = value
 	return elem
 }
-func (elem *Element) Attr(attribute string, value string) *Element {
-	(*elem.Attributes)[attribute] = value
+func (elem *Element) SetName(name string) *Element {
+	elem.Name = name
 	return elem
+}
+func (elem *Element) Attr(attribute string, value string) *Element {
+	return elem.Attribute(attribute, value)
 }
 func (elem *Element) GetAttribute(attribute string) string {
 	// if nil return empty string
@@ -73,12 +108,14 @@ func (elem *Element) GetAttribute(attribute string) string {
 func (elem *Element) SetEvent(event string, cb *func(event *Event) *Element) *Element {
 	allEvents := elem.GetAttribute("hx-trigger")
 	elem.Attribute("hx-post", "")
+
 	// check if existing event
 	if !strings.Contains(allEvents, event) {
-		allEvents += " " + event
+		allEvents += event + ","
 
-		elem.Attribute("hx-trigger", allEvents+" from:body")
+		elem.Attribute("hx-trigger", allEvents)
 	}
+
 	// c.Changed = true
 
 	(*elem.Events)[event] = &EventHandler{ // Fix: Dereference the pointer before indexing the map
@@ -125,11 +162,15 @@ func (elem *Element) OnChange(cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("change", &cb)
 }
 func (elem *Element) OnEvent(name string, cb func(event *Event) *Element) *Element {
-	return elem.SetEvent("event-"+name, &cb)
+	return elem.SetEvent("event-"+name+" from:body", &cb)
+}
+func (elem *Element) RemoveEvent() *Element {
+	elem.Events = &map[string]*EventHandler{}
+	return elem.Attr("hx-trigger", "")
 }
 func (elem *Element) OnEvery(time int, cb func(event *Event) *Element) *Element {
-	elem.SetEvent("every "+strconv.Itoa(time), &cb)
-	return elem.SetEvent("load", &cb)
+	return elem.SetEvent("every "+strconv.Itoa(time), &cb)
+
 }
 func (elem *Element) OnLoad(cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("load", &cb)
@@ -150,5 +191,16 @@ func (elem *Element) AppendChildren(children ...*Element) *Element {
 	for _, child := range children {
 		elem.Append(child)
 	}
+	return elem
+}
+func (elem *Element) Body(child ...*Element) *Element {
+	return elem.AppendChildren(child...)
+}
+func (elem *Element) OnRevealed(cb func(event *Event) *Element) *Element {
+	return elem.SetEvent("revealed", &cb)
+}
+
+func (elem *Element) Validate(validation string) *Element {
+	elem.Validation = validation
 	return elem
 }
