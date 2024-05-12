@@ -1,10 +1,10 @@
 package keren
 
 func BuildHTML(root *Root) string {
-	return HTMLTag(root.Body)
+	return HTMLTag(root.Body, false)
 
 }
-func HTMLTag(node *Node) string {
+func HTMLTag(node *Node, isChildren bool) string {
 	result := ""
 	endTag := ""
 
@@ -12,6 +12,7 @@ func HTMLTag(node *Node) string {
 		// join attributes with space
 		attributes := ""
 		endTag = "</" + node.Element.Tag + ">"
+
 		for key, value := range *node.Element.Attributes {
 			attributes += key + "='" + value + "' "
 		}
@@ -41,8 +42,12 @@ func HTMLTag(node *Node) string {
 		}
 
 	}
+	if !isChildren && node.Element.Root.Title != "" {
+		result += "<script>document.title = '" + node.Element.Root.Title + "'</script>"
+		node.Element.Root.Title = ""
+	}
 	for _, child := range node.Children {
-		result += HTMLTag(child)
+		result += HTMLTag(child, true)
 	}
 	result += endTag
 	return result

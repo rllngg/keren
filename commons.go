@@ -5,21 +5,28 @@ func (root *Root) Button(text string, variant string) *Element {
 
 	return button
 }
-func (root *Root) Input(htmlType string, name string, placeholder string) *Element {
+func (root *Root) Input(htmlType string, name string, placeholder string, label string) *Element {
+
+	group := NewElement(root, "div").Class("form-floating")
 	input := NewElement(root, "input").Attribute("type", htmlType).Attribute("placeholder", placeholder).Class("form-control my-2")
 	input.Attribute("name", input.ID)
 	input.SetName(name)
-	return input
+	group.Append(input)
+	if label != "" {
+		group.Append(root.Label(label).Attribute("for", input.ID))
+	}
+	return group
 }
-func (root *Root) TextInput(name string, placeholder string) *Element {
-	return root.Input("text", name, placeholder)
+func (root *Root) TextInput(name string, placeholder string, label string) *Element {
+	return root.Input("text", name, placeholder, label)
 }
-func (root *Root) PasswordInput(name string, placeholder string) *Element {
-	return root.Input("password", name, placeholder)
+func (root *Root) PasswordInput(name string, placeholder string, label string) *Element {
+	return root.Input("password", name, placeholder, label)
 }
 func (root *Root) Checkbox(name string, text string) *Element {
-	checkbox := root.Input("checkbox", name, text)
-	checkbox.Append(root.Span(text).Class("pl-2"))
+	checkbox := root.Input("checkbox", name, text, "").Class("form-check")
+	checkbox.GetInput().Class("form-check-input")
+	checkbox.Append(root.Span(text).Class("pl-2 form-check-label"))
 	return checkbox
 }
 func (root *Root) Break() *Element {
@@ -69,7 +76,10 @@ func (root *Root) Span(text string) *Element {
 	return span
 }
 func (root *Root) Link(text string, href string) *Element {
-	a := NewElement(root, "a").SetInnerHTML(text).Attribute("href", href)
+	a := NewElement(root, "a").SetInnerHTML(text).Attribute("href", href).Style("text-decoration", "none")
+	if root.CurrentURL == href {
+		a.Class("active")
+	}
 	return a
 }
 func (root *Root) Img(src string) *Element {
@@ -131,21 +141,23 @@ func (root *Root) ContainerFluid(children ...*Element) *Element {
 	return NewElement(root, "div").Class("container-fluid").AppendChildren(children...)
 }
 func (root *Root) Btn(children ...*Element) *Element {
-	return NewElement(root, "button")
+	return NewElement(root, "button").AppendChildren(children...)
 }
 func (root *Root) A(children ...*Element) *Element {
-	return NewElement(root, "a")
+	return NewElement(root, "a").AppendChildren(children...)
 }
 func (root *Root) Nav(children ...*Element) *Element {
-	return NewElement(root, "nav")
+	return NewElement(root, "nav").AppendChildren(children...)
 }
 func (root *Root) Navbar(brand *Element, children ...*Element) *Element {
-	nav := root.Nav().Class("navbar navbar-expand-lg bg-body-tertiary")
-	navBrand := root.ContainerFluid(brand)
+	nav := root.Nav().Class("navbar navbar-expand-lg")
+	navBrand := root.Div(brand).Class("navbar-brand")
 	navbarCollapse := root.Div(
 		children...,
 	).Class("collapse navbar-collapse")
-	mobileBtn := root.Btn(root.Span("").Class("navbar-toggler-icon")).Class("navbar-toggler").Attr("data-bs-toggle", "collapse").Attr("data-bs-target", "#"+navbarCollapse.ID).Attr("aria-controls", "navbarSupportedContent").Attr("aria-expanded", "false").Attr("aria-label", "Toggle navigation").Append(root.Span("").Class("navbar-toggler-icon"))
+	mobileBtn := root.Btn(
+		root.Span("").Class("navbar-toggler-icon"),
+	).Class("navbar-toggler").Attr("data-bs-toggle", "collapse").Attr("data-bs-target", "#"+navbarCollapse.ID).Attr("aria-controls", "navbarSupportedContent").Attr("aria-expanded", "false").Attr("aria-label", "Toggle navigation")
 	return nav.AppendChildren(
 		root.ContainerFluid(
 			navBrand,
@@ -155,14 +167,20 @@ func (root *Root) Navbar(brand *Element, children ...*Element) *Element {
 	)
 }
 
-func (root *Root) Select(options [][]string) *Element {
+func (root *Root) Select(name string, label string, options [][]string) *Element {
+	group := NewElement(root, "div").Class("form-floating")
 	selectElement := NewElement(root, "select")
+	selectElement.Class("form-select")
+	selectElement.SetName(name)
 	for _, option := range options {
 		selectElement.AppendChildren(
 			root.Option(option[0], option[1]),
 		)
 	}
-	return selectElement.Attr("name", selectElement.ID)
+	selectElement.Attr("name", selectElement.ID)
+	group.Append(selectElement)
+	group.Append(root.Label(label).Attr("for", selectElement.ID))
+	return group
 }
 func (root *Root) Option(value string, text string) *Element {
 	return NewElement(root, "option").Text(text).Attribute("value", value)
@@ -179,8 +197,16 @@ func (root *Root) Label(text string) *Element {
 	return NewElement(root, "label").Text(text)
 }
 func (root *Root) FileInput() *Element {
-	return root.Input("file", "file", "")
+	return root.Input("file", "file", "", "")
 }
 func (root *Root) AlertMessage(message string, variant string) *Element {
 	return NewElement(root, "div").Class("alert alert-" + variant).SetInnerHTML(message)
+}
+
+// font awesome support
+func (root *Root) FaIcon(icon string) *Element {
+	return NewElement(root, "i").Class("fa-regular fa-" + icon)
+}
+func (root *Root) FeatherIcon(icon string) *Element {
+	return NewElement(root, "i").Attr("data-feather", icon)
 }

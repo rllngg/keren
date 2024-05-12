@@ -14,6 +14,7 @@ type Element struct {
 	Name        string
 	Attributes  *map[string]string
 	Value       string
+	Parent      *Element
 	Children    []*Element
 	Events      *map[string]*EventHandler
 	Classes     []string
@@ -183,8 +184,19 @@ func (elem *Element) RemoveChildren() *Element {
 	return elem
 }
 
+func (elem *Element) RemoveChildrenWithTag(tag string) *Element {
+	var children []*Element
+	for _, child := range elem.Children {
+		if child.Tag != tag {
+			children = append(children, child)
+		}
+	}
+	elem.Children = children
+	return elem
+}
 func (elem *Element) Append(child *Element) *Element {
 	elem.Children = append(elem.Children, child)
+	child.Parent = elem
 	return elem
 }
 func (elem *Element) AppendChildren(children ...*Element) *Element {
@@ -199,36 +211,51 @@ func (elem *Element) Body(child ...*Element) *Element {
 func (elem *Element) OnRevealed(cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("revealed", &cb)
 }
+func (elem *Element) GetInput() *Element {
+	return elem.Children[0]
+}
 
 func (elem *Element) Validate(validation string) *Element {
-	elem.Validation = validation
+	inputElement := elem.Children[0]
+	if inputElement == nil || !inputElement.HasAttribute("name") {
+		return elem
+	}
+	inputElement.Validation = validation
 	// split text ,
-	// validations := strings.Split(validation, ",")
-	// for _, v := range validations {
-	// 	// required
-	// 	switch {
-	// 	case v == "required":
-	// 		elem.Attribute("required", "true")
-	// 	case strings.Contains(v, "min"):
-	// 		min := strings.Split(v, "=")
-	// 		elem.Attribute("minlength", min[1])
-	// 	case strings.Contains(v, "max"):
-	// 		max := strings.Split(v, "=")
-	// 		elem.Attribute("maxlength", max[1])
-	// 	case strings.Contains(v, "lt"):
-	// 		lt := strings.Split(v, "=")
-	// 		elem.Attribute("max", lt[1])
-	// 	case strings.Contains(v, "gt"):
-	// 		gt := strings.Split(v, "=")
-	// 		elem.Attribute("min", gt[1])
-	// 	case v == "email":
-	// 		elem.Attribute("type", "email")
-	// 	}
-	// }
+	validations := strings.Split(validation, ",")
+	for _, v := range validations {
+		// required
+		switch {
+		case v == "required":
+			inputElement.Attribute("required", "true")
+		case strings.Contains(v, "min"):
+			min := strings.Split(v, "=")
+			inputElement.Attribute("minlength", min[1])
+		case strings.Contains(v, "max"):
+			max := strings.Split(v, "=")
+			inputElement.Attribute("maxlength", max[1])
+		case strings.Contains(v, "lt"):
+			lt := strings.Split(v, "=")
+			inputElement.Attribute("max", lt[1])
+		case strings.Contains(v, "gt"):
+			gt := strings.Split(v, "=")
+			inputElement.Attribute("min", gt[1])
+		case v == "email":
+			inputElement.Attribute("type", "email")
+		}
+	}
 	return elem
 }
 
 func (elem *Element) HasAttribute(attribute string) bool {
 	_, ok := (*elem.Attributes)[attribute]
 	return ok
+}
+func (elem *Element) Title(title string) *Element {
+	elem.Root.Title = title
+	return elem
+}
+func (elem *Element) Redirect(url string) *Element {
+	elem.Root.RedirectURL = url
+	return elem
 }

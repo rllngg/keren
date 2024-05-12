@@ -13,6 +13,9 @@ type Root struct {
 	Elements     *map[string]*Element
 	Device       string
 	PendingEvent []string
+	Title        string
+	RedirectURL  string
+	CurrentURL   string
 }
 
 func NewRoot(device string) *Root {
@@ -22,6 +25,8 @@ func NewRoot(device string) *Root {
 		Elements:     &map[string]*Element{},
 		Device:       device,
 		PendingEvent: []string{},
+		Title:        "",
+		RedirectURL:  "",
 	}
 }
 

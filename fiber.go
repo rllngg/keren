@@ -28,12 +28,25 @@ func UseKerenWithFiber() {
 	// handle css, js
 	/// handle func template
 }
+func Response(c *fiber.Ctx, elem *Element) error {
+	if elem.Root.RedirectURL != "" {
+		c.Set("HX-Redirect", elem.Root.RedirectURL)
+		elem.Root.RedirectURL = ""
+	}
+	c.Set("HX-Retarget", "#"+elem.ID)
+	c.Set("HX-Reswap", "outerHTML")
+	c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+	c.SendString(HTMLTag(NewNode(elem), false))
+	return nil
+}
 func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if c.Method() == "GET" {
 
 			id := uuid.New().String()
 			pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
+			pages[id].CurrentURL = c.OriginalURL()
+			fmt.Println("Current URL : ", c.OriginalURL())
 			handler(pages[id], c)
 			output := BuildHTML(pages[id])
 
@@ -69,9 +82,6 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 			if err != nil {
 				return err
 			}
-			c.Set("HX-Retarget", "body")
-			c.Set("HX-Reswap", "outerHTML")
-			c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
 
 			// Update the root object with the parsed values
 			obj := map[string]Data{}
@@ -81,9 +91,9 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 					if elem.Validation != "" {
 						errs := validate.Var(v[0], elem.Validation)
 						if errs != nil {
-							fmt.Println("Validation Error : ", errs)
-							c.Set("HX-Retarget", "#"+elem.ID)
-							return c.SendString(HTMLTag(NewNode(elem.RemoveChildren().Append(root.AlertMessage(errs.Error(), "danger")))))
+							parent := elem.Parent.RemoveChildrenWithTag("div").Append(root.AlertMessage(errs.Error(), "danger"))
+
+							return Response(c, parent)
 						}
 					}
 					obj[elem.Name] = Data{
@@ -116,9 +126,11 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 			}
 
 			if eventOutput != nil {
-				c.Set("HX-Retarget", "#"+eventOutput.ID)
-				return c.SendString(HTMLTag(NewNode(eventOutput)))
+				return Response(c, eventOutput)
 			}
+			c.Set("HX-Retarget", "body")
+			c.Set("HX-Reswap", "outerHTML")
+			c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
 
 			// Build the HTML output from the root object
 			output := BuildHTML(root)

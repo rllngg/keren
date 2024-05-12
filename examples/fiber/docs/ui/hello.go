@@ -15,7 +15,7 @@ func Hello(app *keren.Root, ctx *fiber.Ctx) error {
 			app.P("Keren is a web framework for Go that is designed to be easy to use and easy to learn. It is a great starting point for building highly interactive web applications in Go.").Style(
 				"max-width", "600px",
 			),
-		).Class("container"),
+		).Class("container").Title("Keren Web Framework"),
 	)
 
 }

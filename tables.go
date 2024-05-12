@@ -9,10 +9,14 @@ type QueryResult struct {
 	Total int
 	Rows  [][]string
 }
+type Columns struct {
+	Name     string
+	Callback func(data []string) *Element
+}
 type DataTable struct {
 	Root        *Root
 	QueryResult QueryResult
-	Columns     []string
+	Columns     []Columns
 	Page        *Pageable
 	Filter      string
 	OnQuery     func(page Pageable) QueryResult
@@ -21,7 +25,7 @@ type DataTable struct {
 func NewDataTable(root *Root) *DataTable {
 	return &DataTable{
 		Root:    root,
-		Columns: []string{},
+		Columns: []Columns{},
 		Page: &Pageable{
 			PageCurrent: 1,
 			PageLimit:   10,
@@ -30,12 +34,15 @@ func NewDataTable(root *Root) *DataTable {
 	}
 }
 
-func (table *DataTable) SetColumns(columns ...string) *DataTable {
-	table.Columns = columns
-	return table
-}
 func (table *DataTable) SetPage(page *Pageable) *DataTable {
 	table.Page = page
+	return table
+}
+func (table *DataTable) AddColumn(name string, callback func(data []string) *Element) *DataTable {
+	table.Columns = append(table.Columns, Columns{
+		Name:     name,
+		Callback: callback,
+	})
 	return table
 }
 func (table *DataTable) Body(body *Element) *Element {
@@ -43,8 +50,8 @@ func (table *DataTable) Body(body *Element) *Element {
 	body.RemoveChildren()
 	for _, data := range table.QueryResult.Rows {
 		trElement := table.Root.Tr()
-		for i := range table.Columns {
-			trElement.Append(table.Root.Td().SetInnerHTML(data[i]))
+		for _, col := range table.Columns {
+			trElement.Append(table.Root.Td(col.Callback(data)))
 		}
 		body.Append(trElement)
 	}
@@ -54,8 +61,8 @@ func (table *DataTable) Body(body *Element) *Element {
 func (table *DataTable) Element(triggerName string) *Element {
 	// create table
 	theadElement := table.Root.Thead()
-	for _, column := range table.Columns {
-		theadElement.Append(table.Root.Th(column))
+	for _, data := range table.Columns {
+		theadElement.Append(table.Root.Th(data.Name))
 	}
 	tbodyElement := table.Root.Tbody()
 	table.QueryResult = table.OnQuery(*table.Page)
@@ -71,7 +78,7 @@ func (table *DataTable) Element(triggerName string) *Element {
 		table.Body(tbodyElement)
 		return tbodyElement
 	}
-	search_input := table.Root.Input("text", "search", "Search...").OnChange(func(e *Event) *Element {
+	search_input := table.Root.Input("text", "search", "Search...", "Search").OnChange(func(e *Event) *Element {
 		// search
 		search := e.Element.Value
 		if search == "" {

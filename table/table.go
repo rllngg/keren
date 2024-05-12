@@ -65,7 +65,7 @@ func (table *DataTable) Element() *keren.Element {
 		theadElement,
 		tbodyElement,
 	)
-	search_input := table.Root.Input("text", "search", "Search...").OnChange(func(e *keren.Event) *keren.Element {
+	search_input := table.Root.Input("text", "search", ".", "Search").OnChange(func(e *keren.Event) *keren.Element {
 		// search
 		search := e.Element.Value
 		if search == "" {

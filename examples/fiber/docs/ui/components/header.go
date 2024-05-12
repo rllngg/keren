@@ -7,24 +7,23 @@ import (
 func Navigation(root *keren.Root) *keren.Element {
 	if root.IsDesktop() {
 		return root.Navbar(
-			root.Span("Keren UI"),
+			root.Span("Keren UI").Class("text-white"),
 			root.Ul(
 				root.NavItem(
-					root.Link("Home", "/").Class("nav-link active"),
+					root.Link("Home", "/").AddClass("nav-link text-white"),
 				),
 				root.NavItem(
-					root.Link("Forms", "/example/forms").Class("nav-link"),
+					root.Link("Forms", "/example/forms").AddClass("nav-link text-white"),
 				),
 				root.NavItem(
-					root.Link("Navigation", "/example/navigation").Class("nav-link"),
+					root.Link("Tables", "/example/tables").AddClass("nav-link text-white"),
 				),
-			).Class("navbar-nav", "me-auto", "mb-2", "mb-lg-0"),
-		)
+			).Class("navbar-nav me-auto mb-2 mb-lg-0"),
+		).AddClass("bg-primary navbar-dark")
 	}
 	return root.BottomNavigation(
-		root.NavItem(
-			root.Link("Home", "./"),
-			root.Link("User", "./user"),
-		),
-	)
+		root.BottomNaviItem("Home", "/", "home"),
+		root.BottomNaviItem("Forms", "/example/forms", "list"),
+		root.BottomNaviItem("Tables", "/example/tables", "table"),
+	).AddClass("bg-primary")
 }
