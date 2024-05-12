@@ -202,5 +202,33 @@ func (elem *Element) OnRevealed(cb func(event *Event) *Element) *Element {
 
 func (elem *Element) Validate(validation string) *Element {
 	elem.Validation = validation
+	// split text ,
+	// validations := strings.Split(validation, ",")
+	// for _, v := range validations {
+	// 	// required
+	// 	switch {
+	// 	case v == "required":
+	// 		elem.Attribute("required", "true")
+	// 	case strings.Contains(v, "min"):
+	// 		min := strings.Split(v, "=")
+	// 		elem.Attribute("minlength", min[1])
+	// 	case strings.Contains(v, "max"):
+	// 		max := strings.Split(v, "=")
+	// 		elem.Attribute("maxlength", max[1])
+	// 	case strings.Contains(v, "lt"):
+	// 		lt := strings.Split(v, "=")
+	// 		elem.Attribute("max", lt[1])
+	// 	case strings.Contains(v, "gt"):
+	// 		gt := strings.Split(v, "=")
+	// 		elem.Attribute("min", gt[1])
+	// 	case v == "email":
+	// 		elem.Attribute("type", "email")
+	// 	}
+	// }
 	return elem
+}
+
+func (elem *Element) HasAttribute(attribute string) bool {
+	_, ok := (*elem.Attributes)[attribute]
+	return ok
 }

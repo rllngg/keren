@@ -24,6 +24,7 @@ func NewRoot(device string) *Root {
 		PendingEvent: []string{},
 	}
 }
+
 func Identifier() string {
 	// id_random
 	// random string 8
@@ -48,16 +49,17 @@ func randomString(n int, alphabet []rune) string {
 func (root *Root) GetElementById(ID string) *Element {
 	return (*root.Elements)[ID]
 }
-func (root *Root) UpdateValue(ID string, value string) {
+func (root *Root) UpdateValue(ID string, value string) *Element {
 	// update the view
 	elem := root.GetElementById(ID)
 	if elem != nil {
 		elem.Value = value
 		elem.ForceChange()
 	}
+	return elem
 
 }
-func (root *Root) TriggerEvent(ID string, event string, request *fasthttp.RequestCtx) *Element {
+func (root *Root) TriggerEvent(ID string, event string, request *fasthttp.RequestCtx, data map[string]Data) *Element {
 	// search through
 	elem := root.GetElementById(ID)
 	if elem == nil {
@@ -69,6 +71,7 @@ func (root *Root) TriggerEvent(ID string, event string, request *fasthttp.Reques
 			Name:    event,
 			Element: elem,
 			Request: request,
+			Data:    data,
 		})
 	}
 	return nil

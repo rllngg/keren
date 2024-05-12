@@ -8,6 +8,7 @@ func (root *Root) Button(text string, variant string) *Element {
 func (root *Root) Input(htmlType string, name string, placeholder string) *Element {
 	input := NewElement(root, "input").Attribute("type", htmlType).Attribute("placeholder", placeholder).Class("form-control my-2")
 	input.Attribute("name", input.ID)
+	input.SetName(name)
 	return input
 }
 func (root *Root) TextInput(name string, placeholder string) *Element {
@@ -18,8 +19,7 @@ func (root *Root) PasswordInput(name string, placeholder string) *Element {
 }
 func (root *Root) Checkbox(name string, text string) *Element {
 	checkbox := root.Input("checkbox", name, text)
-	checkbox.Text(name)
-	checkbox.Class("")
+	checkbox.Append(root.Span(text).Class("pl-2"))
 	return checkbox
 }
 func (root *Root) Break() *Element {
@@ -170,6 +170,7 @@ func (root *Root) Option(value string, text string) *Element {
 func (root *Root) TextArea(name string, placeholder string) *Element {
 	elem := NewElement(root, "textarea").Attribute("placeholder", placeholder)
 	elem.Attribute("name", elem.ID)
+	elem.SetName(name)
 	elem.Text(placeholder).Class("form-control")
 	return elem
 }
@@ -179,4 +180,7 @@ func (root *Root) Label(text string) *Element {
 }
 func (root *Root) FileInput() *Element {
 	return root.Input("file", "file", "")
+}
+func (root *Root) AlertMessage(message string, variant string) *Element {
+	return NewElement(root, "div").Class("alert alert-" + variant).SetInnerHTML(message)
 }
