@@ -132,7 +132,7 @@ func (root *Root) CardBody(children ...*Element) *Element {
 	return NewElement(root, "div").Class("card-body").AppendChildren(children...)
 }
 func (root *Root) Row(children ...*Element) *Element {
-	return NewElement(root, "div").Class("row").AppendChildren(children...)
+	return NewElement(root, "div").Class("row gap-2").AppendChildren(children...)
 }
 func (root *Root) Col(children ...*Element) *Element {
 	return NewElement(root, "div").Class("col").AppendChildren(children...)

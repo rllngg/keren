@@ -1,5 +1,7 @@
 package keren
 
+import "strconv"
+
 type Pageable struct {
 	PageCurrent int
 	PageLimit   int
@@ -78,18 +80,31 @@ func (table *DataTable) Element(triggerName string) *Element {
 		table.Body(tbodyElement)
 		return tbodyElement
 	}
-	search_input := table.Root.Input("text", "search", "Search...", "Search").OnChange(func(e *Event) *Element {
+	search_input := table.Root.Input("text", "search", "Search...", "Search")
+	search_input.GetInput().OnChange(func(e *Event) *Element {
 		// search
-		search := e.Element.Value
-		if search == "" {
-			return tableElement
-		}
-		table.Filter = search
+		table.Filter = e.Element.Value
 
 		return ReloadTable()
 	})
 	div := table.Root.Div(
-		search_input,
+		table.Root.Row(
+			table.Root.Col(
+				search_input,
+			).AddClass("col-md-3"),
+			table.Root.Col(
+				table.Root.Select("limit", "Limit", [][]string{
+					{"5", "5"},
+					{"10", "10"},
+					{"50", "50"},
+					{"100", "100"},
+				}).OnChange(func(event *Event) *Element {
+					limit, _ := strconv.Atoi(event.Element.Value) // Convert string to int
+					table.Page.PageLimit = limit
+					return ReloadTable()
+				}).AddClass("col-md-2"),
+			),
+		).AddClass("align-items-center"),
 		tableElement,
 	).OnEvent(triggerName, func(event *Event) *Element {
 		return ReloadTable()
