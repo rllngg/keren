@@ -48,6 +48,7 @@
 <script>
     document.body.addEventListener('htmx:configRequest', (evt) => {
         evt.detail.headers['Hx-Page-Id'] = '{{ .PageID }}'
+        console.log(evt.detail)
         if (evt.detail.triggeringEvent) {
             evt.detail.headers['Hx-Event'] = evt.detail.triggeringEvent.type
 

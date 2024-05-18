@@ -74,7 +74,7 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 			elementID := string(c.Request().Header.Peek("Hx-Trigger"))
 			event := string(c.Request().Header.Peek("Hx-Event"))
 			if event == "" {
-				event = "load"
+				event = "default"
 			}
 
 			// Parse the values from the request body
@@ -124,7 +124,6 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 				c.Set("HX-Trigger", strings.Join(root.PendingEvent, ","))
 				root.PendingEvent = []string{}
 			}
-
 			if eventOutput != nil {
 				return Response(c, eventOutput)
 			}

@@ -165,16 +165,16 @@ func (elem *Element) OnChange(cb func(event *Event) *Element) *Element {
 func (elem *Element) OnEvent(name string, cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("event-"+name+" from:body", &cb)
 }
-func (elem *Element) RemoveEvent() *Element {
+func (elem *Element) RemoveAllEvent() *Element {
 	elem.Events = &map[string]*EventHandler{}
 	return elem.Attr("hx-trigger", "")
 }
 func (elem *Element) OnEvery(time int, cb func(event *Event) *Element) *Element {
-	return elem.SetEvent("every "+strconv.Itoa(time), &cb)
+	return elem.SetEvent("every "+strconv.Itoa(time), &cb).SetEvent("default", &cb)
 
 }
 func (elem *Element) OnLoad(cb func(event *Event) *Element) *Element {
-	return elem.SetEvent("load", &cb)
+	return elem.SetEvent("load", &cb).SetEvent("default", &cb)
 }
 func (elem *Element) OnSubmit(cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("submit", &cb)
