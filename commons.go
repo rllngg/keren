@@ -295,3 +295,13 @@ func (root *Root) Modal(title string, body *Element, footer *Element) *Element {
 func (root *Root) Script(script string) *Element {
 	return NewElement(root, "script").Attr("type", "text/javascript").Text(script)
 }
+func (root *Root) Image(src string) *Element {
+	return NewElement(root, "img").Attr("src", src)
+}
+func (root *Root) Video(src string) *Element {
+	return NewElement(root, "video").Attr("src", src).Attr("controls", "true")
+}
+
+func (root *Root) Audio(src string) *Element {
+	return NewElement(root, "audio").Attr("src", src).Attr("controls", "true")
+}
