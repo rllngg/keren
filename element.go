@@ -387,3 +387,8 @@ func (elem *Element) HideOnRequest() *Element {
 	elem.AddClass("htmx-hide")
 	return elem
 }
+
+func (elem *Element) Confirm(message string) *Element {
+	elem.Attribute("hx-confirm", message)
+	return elem
+}

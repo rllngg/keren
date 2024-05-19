@@ -1,9 +1,6 @@
 package ui
 
 import (
-	"strconv"
-	"time"
-
 	"github.com/erlanggatampan/keren"
 	"github.com/erlanggatampan/keren/examples/fiber/docs/ui/components"
 	"github.com/gofiber/fiber/v2"
@@ -33,15 +30,10 @@ func Forms(app *keren.Root, ctx *fiber.Ctx) error {
 		firstName:  "John",
 		lastName:   "Doe",
 	}
-	notif := 0
 	return app.Container(
-		app.Row(
-			app.Col(
-				components.Navigation(app),
-				app.Text(strconv.Itoa(notif)).OnEvery(10000, func(event *keren.Event) *keren.Element {
-					notif = notif + 1
-					return event.Element.Text(strconv.Itoa(notif))
-				}),
+		app.Div(
+			components.Navigation(app),
+			app.Div(
 				app.Div(
 					app.Card(
 						app.CardBody(
@@ -66,13 +58,12 @@ func Forms(app *keren.Root, ctx *fiber.Ctx) error {
 								app.FileInput(),
 								app.Button("Submit", "primary").Body(
 									app.FeatherIcon("loader").AddClass("ms-2 spin").ShowOnRequest(),
-									app.FeatherIcon("send").AddClass("ms-2").HideOnRequest(),
+									app.FeatherIcon("send").AddClass("ms2").HideOnRequest(),
 								).DisableOnClick(),
-							).DisableInputOnRequest().OnSubmit(func(event *keren.Event) *keren.Element {
+							).Confirm("Anda Yakin ?").DisableInputOnRequest().OnSubmit(func(event *keren.Event) *keren.Element {
 								//123
 								// sleep 3 second
-								time.Sleep(3 * time.Second)
-								return event.Element.Title("Submitted").Text("Hello " + event.Data["email"].Value + " " + event.Data["username"].Value + " " + event.Data["password"].Value + " " + event.Data["remember"].Value + " " + event.Data["message"].Value + " Select " + event.Data["select"].Value)
+								return event.Element.Body(app.Modal("modal1", app.P("Modal Content"), app.Div()).AddClass("mt-2"))
 							}),
 						),
 					),
@@ -93,7 +84,15 @@ func Forms(app *keren.Root, ctx *fiber.Ctx) error {
 						),
 					),
 				).Title("Forms"),
-			).Class("col-md-12"),
-		).AddClass("gap-0"),
+				app.NavTabs(
+					app.Tab(app.P("Tab 1"), app.P("Tab 1 Content")),
+					app.Tab(app.P("Tab 2"), app.Div(
+						app.Button("Click Me", "primary").OnClick(func(event *keren.Event) *keren.Element {
+							return event.Element.Text("Clicked")
+						}),
+					)),
+				),
+			).Class("container mt-2"),
+		).AddClass(""),
 	)
 }

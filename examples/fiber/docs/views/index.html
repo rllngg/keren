@@ -62,6 +62,8 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="/static/htmx.min.js"></script>
 </head>
 
@@ -86,6 +88,19 @@
         if (evt.detail.triggeringEvent) {
             evt.detail.headers['Hx-Event'] = evt.detail.triggeringEvent.type
 
+        }
+    })
+    document.addEventListener("htmx:confirm", function (e) {
+        e.preventDefault()
+        if (e.detail.question != null) {
+            Swal.fire({
+                text: `${e.detail.question}`
+            }).then(function (result) {
+                if (result.isConfirmed) e.detail.issueRequest(true) // use true to skip window.confirm
+            })
+
+        } else {
+            e.detail.issueRequest(true) // use true to skip window.confirm
         }
     })
 

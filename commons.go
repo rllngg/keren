@@ -1,5 +1,12 @@
 package keren
 
+import "strings"
+
+type NavTab struct {
+	Header  *Element
+	Content *Element
+}
+
 func (root *Root) Button(text string, variant string) *Element {
 	button := NewElement(root, "button").Class("btn btn-" + variant).SetInnerHTML(text)
 
@@ -246,4 +253,45 @@ func (root *Root) Flex(children ...*Element) *Element {
 }
 func (root *Root) InvalidFeedback(text string) *Element {
 	return NewElement(root, "div").Class("invalid-feedback").SetInnerHTML(text)
+}
+
+func (root *Root) Tab(head *Element, content *Element) *NavTab {
+	return &NavTab{
+		Header:  head,
+		Content: content,
+	}
+}
+func (root *Root) NavTabs(tabs ...*NavTab) *Element {
+	ul := NewElement(root, "ul").Class("nav nav-tabs").Attribute("role", "tablist")
+	div := NewElement(root, "div").Class("tab-content")
+	for _, tab := range tabs {
+		btn := root.Button("", "").Body(tab.Header).Attr("data-bs-toggle", "tab").Attr("role", "tab").Attr("type", "button").Attr("aria-selected", "false")
+		ul.Append(root.Li(btn).Class("nav-item").Attr("role", "presentation"))
+
+		content := root.Div(tab.Content).Class("tab-pane fade").Attr("role", "tabpanel")
+		div.Append(content)
+		btn.Attribute("data-bs-target", "#"+content.ID)
+
+	}
+	return root.Div(ul, div).Class("nav-tabs")
+}
+func (root *Root) Modal(title string, body *Element, footer *Element) *Element {
+	modal := root.Div(
+		root.Div(
+			root.Div(
+				root.Div(
+					root.H5(title).Class("modal-title"),
+					root.Btn().Class("btn-close").Attr("data-bs-dismiss", "modal").Attr("aria-label", "Close").Attr("type", "button"),
+				).Class("modal-header"),
+				root.Div(body).Class("modal-body"),
+			).Class("modal-content"),
+		).Class("modal-dialog"),
+	).Class("modal").Attr("tabindex", "-1").Attr("role", "dialog").Attr("aria-hidden", "false")
+	return modal.Append(root.Script(`
+		let modal_` + strings.Split(modal.ID, "-")[1] + ` = new bootstrap.Modal(document.getElementById("` + modal.ID + `"))
+		modal_` + strings.Split(modal.ID, "-")[1] + `.show()
+	`))
+}
+func (root *Root) Script(script string) *Element {
+	return NewElement(root, "script").Attr("type", "text/javascript").Text(script)
 }
