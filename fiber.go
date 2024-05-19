@@ -70,7 +70,7 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 
 			// Retrieve the element ID and event type from the request headers
 			elementID := string(c.Request().Header.Peek("Hx-Trigger"))
-			event := string(c.Request().Header.Peek("Hx-Event"))
+			event := strings.Trim(string(c.Request().Header.Peek("Hx-Event")), " ")
 			if event == "" {
 				event = "default"
 			}

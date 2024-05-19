@@ -62,6 +62,9 @@ func TableExample(app *keren.Root, c *fiber.Ctx) error {
 				app.CardBody(
 					app.H1("Tables With Custom Data"),
 					app.P("This is an example of table with custom data."),
+					app.Button("Refresh", "primary").OnClick(func(event *keren.Event) *keren.Element {
+						return event.Element.PublishEvent("table")
+					}),
 					table.Element("table"),
 				),
 			).Class("container p-5"),

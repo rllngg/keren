@@ -135,7 +135,11 @@ func (elem *Element) SetEvent(event string, cb *func(event *Event) *Element) *El
 		if allEvents != "" {
 			allEvents += ", "
 		}
+
 		allEvents += event
+		if strings.Contains(event, "event-") {
+			allEvents += " from:body"
+		}
 
 		elem.Attribute("hx-trigger", allEvents)
 	}
@@ -220,7 +224,7 @@ func (elem *Element) OnChange(cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("change", &cb)
 }
 func (elem *Element) OnEvent(name string, cb func(event *Event) *Element) *Element {
-	return elem.SetEvent("event-"+name+" from:body", &cb)
+	return elem.SetEvent("event-"+name, &cb)
 }
 func (elem *Element) RemoveAllEvent() *Element {
 	elem.Events = &map[string]*EventHandler{}
@@ -397,5 +401,9 @@ func (elem *Element) Popover(title string, message string) *Element {
 	elem.Attribute("data-bs-toggle", "popover")
 	elem.Attribute("data-bs-content", message)
 	elem.Attribute("data-bs-title", title)
+	return elem
+}
+func (elem *Element) PublishEvent(name string) *Element {
+	elem.Root.PublishEvent(name)
 	return elem
 }

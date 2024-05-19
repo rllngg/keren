@@ -139,7 +139,7 @@
     document.body.addEventListener('htmx:afterSwap', (evt) => {
         feather.replace()
         const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-        const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        const popoverList = popoverTriggerList.forEach(function (popoverTriggerEl) {
             return new bootstrap.Popover(popoverTriggerEl)
         })
     })
