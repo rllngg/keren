@@ -62,8 +62,6 @@
             }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script src="/static/htmx.min.js"></script>
 </head>
 
@@ -80,6 +78,26 @@
             Hello, world! This is a toast message.
         </div>
     </div>
+    <!-- confirm modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirm-body">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="confirm-yes">Yes</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </body>
 <script>
     document.body.addEventListener('htmx:configRequest', (evt) => {
@@ -90,14 +108,25 @@
 
         }
     })
+    let confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'), {
+        keyboard: false
+    })
+    let confirmBody = document.getElementById('confirm-body')
+    let confirmYes = document.getElementById('confirm-yes')
     document.addEventListener("htmx:confirm", function (e) {
         e.preventDefault()
         if (e.detail.question != null) {
-            Swal.fire({
-                text: `${e.detail.question}`
-            }).then(function (result) {
-                if (result.isConfirmed) e.detail.issueRequest(true) // use true to skip window.confirm
+            confirmBody.innerHTML = e.detail.question
+            let newConfirmYes = confirmYes.cloneNode(true)
+            confirmYes.parentNode.replaceChild(newConfirmYes, confirmYes)
+            confirmYes = newConfirmYes
+
+            confirmModal.show()
+            newConfirmYes.addEventListener('click', function () {
+                e.detail.issueRequest(true)
+                confirmModal.hide()
             })
+
 
         } else {
             e.detail.issueRequest(true) // use true to skip window.confirm

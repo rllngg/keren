@@ -286,7 +286,7 @@ func (root *Root) Modal(title string, body *Element, footer *Element) *Element {
 				root.Div(body).Class("modal-body"),
 			).Class("modal-content"),
 		).Class("modal-dialog"),
-	).Class("modal").Attr("tabindex", "-1").Attr("role", "dialog").Attr("aria-hidden", "false")
+	).Class("modal fade").Attr("tabindex", "-1").Attr("role", "dialog").Attr("aria-hidden", "false")
 	return modal.Append(root.Script(`
 		let modal_` + strings.Split(modal.ID, "-")[1] + ` = new bootstrap.Modal(document.getElementById("` + modal.ID + `"))
 		modal_` + strings.Split(modal.ID, "-")[1] + `.show()

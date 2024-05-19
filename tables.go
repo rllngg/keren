@@ -56,19 +56,19 @@ func (table *DataTable) Body(body *Element) *Element {
 	return body
 }
 func (table *DataTable) GetPagination() *Element {
-	return table.Root.Div(
+	return table.Root.Nav(table.Root.Ul(
 
-		table.Root.Button("Prev", "primary btn-sm").Disabled(table.Page <= 0).OnClick(func(event *Event) *Element {
+		table.Root.Li(table.Root.Link("Previous", "#").Class("page-link text-sm")).Class("page-item").Disabled(table.Page <= 0).OnClick(func(event *Event) *Element {
 
 			table.Page = table.Page - 1
 			return table.GetTable()
 		}),
 
-		table.Root.Button("Next", "primary btn-sm").OnClick(func(event *Event) *Element {
+		table.Root.Li(table.Root.Link("Next", "#").Class("page-link text-sm")).Class("page-item").OnClick(func(event *Event) *Element {
 			table.Page = table.Page + 1
 			return table.GetTable()
 		}),
-	).Class("d-flex gap-2")
+	).Class("pagination"))
 }
 func (table *DataTable) GetTable() *Element {
 	// create table
