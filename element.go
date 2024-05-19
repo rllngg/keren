@@ -275,12 +275,13 @@ func (elem *Element) GetInput() *Element {
 	return elem.Children[0]
 }
 
-func (elem *Element) Validate(validation string) *Element {
-	inputElement := elem.Children[0]
+func (elem *Element) Validate(validation string, errorMessage string) *Element {
+	inputElement := elem.GetInput()
 	if inputElement == nil || !inputElement.HasAttribute("name") {
 		return elem
 	}
 	inputElement.Validation = validation
+	inputElement.ErrorMessage = errorMessage
 	// split text ,
 	validations := strings.Split(validation, ",")
 	for _, v := range validations {
@@ -368,4 +369,21 @@ func (elem *Element) Focus() *Element {
 
 func isInput(tag string) bool {
 	return tag == "input" || tag == "textarea" || tag == "select"
+}
+func (elem *Element) DisableOnClick() *Element {
+	elem.Attribute("hx-disabled-elt", "this")
+	return elem
+}
+func (elem *Element) DisableInputOnRequest() *Element {
+	elem.Attribute("hx-disabled-elt", "input,texatea,button,select")
+	return elem
+}
+func (elem *Element) ShowOnRequest() *Element {
+	elem.AddClass("htmx-indicator")
+	return elem
+}
+
+func (elem *Element) HideOnRequest() *Element {
+	elem.AddClass("htmx-hide")
+	return elem
 }

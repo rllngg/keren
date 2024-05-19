@@ -2,6 +2,7 @@ package ui
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/erlanggatampan/keren"
 	"github.com/erlanggatampan/keren/examples/fiber/docs/ui/components"
@@ -48,24 +49,29 @@ func Forms(app *keren.Root, ctx *fiber.Ctx) error {
 
 							app.Form(
 								app.Flex(
-									app.TextInput("first_name", "John", "First Name").Validate("required").Bind(&sform.firstName).Focus(),
-									app.TextInput("last_name", "Doe", "Last Name").Validate("required").Bind(&sform.lastName),
+									app.TextInput("first_name", "John", "First Name").Validate("required", "Mohon Isi Nama").Bind(&sform.firstName).Focus(),
+									app.TextInput("last_name", "Doe", "Last Name").Validate("required", "Mohon Isi Nama").Bind(&sform.lastName),
 								),
-								app.NumberInput("age", "18", "Age").Validate("required,min=0,max=100").Bind(&sform.age).Error("Age harus diisi"),
-								app.TextInput("email", "email@gmail.com", "Email").Validate("email,min=5,max=10").Error("Email Wajib disi dengan valid email").Bind(&sform.email),
-								app.TextInput("username", "@username", "Username").Validate("min=8,max=32").Bind(&sform.username).Error("Username harus diisi"),
-								app.PasswordInput("password", "***", "Password").Bind(&sform.password).Error("Password harus diisi"),
-								app.Checkbox("is_go_developer", "I am Go Developer").Validate("required").Bind(&sform.remember),
-								app.TextArea("message", "Message").Validate("required,min=0,max=10").Bind(&sform.message),
+								app.NumberInput("age", "18", "Age").Validate("required,min=0,max=100", "Age harus diisi").Bind(&sform.age),
+								app.TextInput("email", "email@gmail.com", "Email").Validate("email,min=4,max=100", "Email Wajib disi dengan valid email").Bind(&sform.email),
+								app.TextInput("username", "@username", "Username").Validate("min=4,max=32", "Username harus di isi").Bind(&sform.username),
+								app.PasswordInput("password", "***", "Password").Bind(&sform.password).Validate("required,min=4,max=32", "Password harus diisi"),
+								app.Checkbox("is_go_developer", "I am Go Developer").Validate("required", "Harus Go  Developer").Bind(&sform.remember),
+								app.TextArea("message", "Message").Validate("required,min=0,max=10", "Pesan Harus di isi").Bind(&sform.message),
 								app.Select("select", "Example Select", [][]string{
 									{"1", "One"},
 									{"2", "Two"},
 									{"3", "Three"},
-								}).Validate("required").AddClass("mt-2").Bind(&sform.selectData),
+								}).Validate("required", "Wajib di pilih").AddClass("mt-2").Bind(&sform.selectData),
 								app.FileInput(),
-								app.Button("Submit", "primary"),
-							).OnSubmit(func(event *keren.Event) *keren.Element {
+								app.Button("Submit", "primary").Body(
+									app.FeatherIcon("loader").AddClass("ms-2 spin").ShowOnRequest(),
+									app.FeatherIcon("send").AddClass("ms-2").HideOnRequest(),
+								).DisableOnClick(),
+							).DisableInputOnRequest().OnSubmit(func(event *keren.Event) *keren.Element {
 								//123
+								// sleep 3 second
+								time.Sleep(3 * time.Second)
 								return event.Element.Title("Submitted").Text("Hello " + event.Data["email"].Value + " " + event.Data["username"].Value + " " + event.Data["password"].Value + " " + event.Data["remember"].Value + " " + event.Data["message"].Value + " Select " + event.Data["select"].Value)
 							}),
 						),
