@@ -20,8 +20,11 @@ func HTMLTag(node *Node, isChildren bool) string {
 		}
 		classes := ""
 		node.Element.ShownLimit -= 1
-		for _, class := range node.Element.Classes {
-			classes += class + " "
+		for i, class := range node.Element.Classes {
+			if i > 0 {
+				classes += " "
+			}
+			classes += class
 		}
 		style := ""
 		if len(node.Element.Styles) > 0 {
