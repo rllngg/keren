@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/erlanggatampan/keren"
@@ -16,6 +15,12 @@ func TableExample(app *keren.Root, c *fiber.Ctx) error {
 		{"3", "John Smith"},
 		{"4", "Jane Smith"},
 		{"5", "John Doe"},
+		{"6", "Jane Doe"},
+		{"7", "John Smith"},
+		{"8", "Budi"},
+		{"9", "Jane Smith"},
+		{"10", "Dimas"},
+		{"11", "Jane Doe"},
 	}
 	table := keren.NewDataTable(app)
 	table.AddColumn("ID", func(data []string) *keren.Element {
@@ -29,19 +34,24 @@ func TableExample(app *keren.Root, c *fiber.Ctx) error {
 			return event.Element.Text(data[1] + " Clicked")
 		})
 	})
-	fmt.Println("=======")
 
 	table.OnQuery = func(page keren.Pageable) keren.QueryResult {
 		filtered := [][]string{}
-		fmt.Println(table.Filter)
+		totalSkip := page.Limit * page.Current
 		for _, data := range datas {
+			if len(filtered) >= page.Limit {
+				break
+			}
+			if totalSkip > 0 {
+				totalSkip--
+				continue
+			}
 			if table.Filter == "" || strings.Contains(data[1], table.Filter) {
 				filtered = append(filtered, data)
 			}
 		}
-		fmt.Println("Filtered", filtered)
 		return keren.QueryResult{
-			Total: 1,
+			Total: len(filtered),
 			Rows:  filtered,
 		}
 	}

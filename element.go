@@ -1,44 +1,54 @@
 package keren
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/xlab/treeprint"
 )
 
+type BindType interface {
+	*string | *int | *bool | *uint
+}
 type Element struct {
-	ID          string
-	Root        *Root
-	Tag         string
-	Name        string
-	Attributes  *map[string]string
-	Value       string
-	Parent      *Element
-	Children    []*Element
-	Events      *map[string]*EventHandler
-	Classes     []string
-	Styles      map[string]string
-	TextContent string
-	Changed     bool
-	ShownLimit  int
-	Validation  string
+	ID           string
+	Root         *Root
+	Tag          string
+	Name         string
+	Attributes   *map[string]string
+	Value        string
+	Parent       *Element
+	Children     []*Element
+	Events       *map[string]*EventHandler
+	Classes      []string
+	Styles       map[string]string
+	TextContent  string
+	Changed      bool
+	ShownLimit   int
+	Validation   string
+	BindedData   interface{}
+	ErrorMessage string
+	AllowEditing bool
+	HookOnRender func(*Element)
 }
 
 func NewElement(root *Root, tag string) *Element {
 
 	elem := &Element{
-		Root:       root,
-		ID:         Identifier(),
-		Tag:        tag,
-		Attributes: &map[string]string{},
-		Children:   []*Element{},
-		Events:     &map[string]*EventHandler{},
-		Classes:    []string{},
-		Styles:     map[string]string{},
-		Changed:    true,
-		ShownLimit: -1,
-		Name:       "",
+		Root:         root,
+		ID:           Identifier(),
+		Tag:          tag,
+		Attributes:   &map[string]string{},
+		Children:     []*Element{},
+		Events:       &map[string]*EventHandler{},
+		Classes:      []string{},
+		Styles:       map[string]string{},
+		Changed:      true,
+		ShownLimit:   -1,
+		Name:         "",
+		AllowEditing: true,
+		ErrorMessage: "",
 	}
 	root.RegisterElement(elem)
 	return elem
@@ -46,6 +56,16 @@ func NewElement(root *Root, tag string) *Element {
 func (elem *Element) ForceChange() {
 	elem.Changed = true
 }
+func (elem *Element) CallOnRender() {
+	if elem.HookOnRender != nil {
+		elem.HookOnRender(elem)
+	}
+}
+func (elem *Element) OnRender(cb func(*Element)) *Element {
+	elem.HookOnRender = cb
+	return elem
+}
+
 func (elem *Element) SetInnerHTML(html string) *Element {
 	elem.TextContent = html
 	return elem
@@ -112,7 +132,10 @@ func (elem *Element) SetEvent(event string, cb *func(event *Event) *Element) *El
 
 	// check if existing event
 	if !strings.Contains(allEvents, event) {
-		allEvents += event + ","
+		if allEvents != "" {
+			allEvents += ", "
+		}
+		allEvents += event
 
 		elem.Attribute("hx-trigger", allEvents)
 	}
@@ -126,14 +149,48 @@ func (elem *Element) SetEvent(event string, cb *func(event *Event) *Element) *El
 	return elem
 }
 func (elem *Element) Disable() *Element {
+	elem.SetEditing(false)
 	elem.Attribute("disabled", "true")
 	return elem
 }
 func (elem *Element) Enable() *Element {
-	elem.Attribute("disabled", "false")
+	elem.SetEditing(true)
+	elem.RemoveAttribute("disabled")
+	return elem
+}
+func (elem *Element) Disabled(disabled bool) *Element {
+	if disabled {
+		return elem.Disable()
+	}
+	return elem.Enable()
+}
+func (elem *Element) Readonly(readonly bool) *Element {
+	if readonly {
+		elem.SetEditing(false)
+		return elem.Attribute("readonly", "true")
+	}
+	elem.SetEditing(true)
+	return elem.Attribute("readonly", "false")
+}
+func (elem *Element) SetEditing(allow bool) *Element {
+	elem.AllowEditing = allow
 	return elem
 }
 func (elem *Element) SetValue(value string) *Element {
+	if elem.BindedData != nil {
+		if reflect.TypeOf(elem.BindedData).String() == "*string" {
+			reflect.ValueOf(elem.BindedData).Elem().Set(reflect.ValueOf(value))
+
+		}
+		if reflect.TypeOf(elem.BindedData).String() == "*int" {
+			intValue, _ := strconv.Atoi(value)
+			reflect.ValueOf(elem.BindedData).Elem().Set(reflect.ValueOf(intValue))
+		}
+		if reflect.TypeOf(elem.BindedData).String() == "*bool" {
+			boolValue, _ := strconv.ParseBool(value)
+			reflect.ValueOf(elem.BindedData).Elem().Set(reflect.ValueOf(boolValue))
+		}
+	}
 	elem.Value = value
 	elem.ForceChange()
 	return elem
@@ -170,7 +227,7 @@ func (elem *Element) RemoveAllEvent() *Element {
 	return elem.Attr("hx-trigger", "")
 }
 func (elem *Element) OnEvery(time int, cb func(event *Event) *Element) *Element {
-	return elem.SetEvent("every "+strconv.Itoa(time), &cb).SetEvent("default", &cb)
+	return elem.SetEvent("test every "+strconv.Itoa(time), &cb).SetEvent("default", &cb)
 
 }
 func (elem *Element) OnLoad(cb func(event *Event) *Element) *Element {
@@ -212,6 +269,9 @@ func (elem *Element) OnRevealed(cb func(event *Event) *Element) *Element {
 	return elem.SetEvent("revealed", &cb)
 }
 func (elem *Element) GetInput() *Element {
+	if isInput(elem.Tag) {
+		return elem
+	}
 	return elem.Children[0]
 }
 
@@ -246,6 +306,11 @@ func (elem *Element) Validate(validation string) *Element {
 	}
 	return elem
 }
+func (elem *Element) Error(message string) *Element {
+	input := elem.GetInput()
+	input.ErrorMessage = message
+	return elem
+}
 
 func (elem *Element) HasAttribute(attribute string) bool {
 	_, ok := (*elem.Attributes)[attribute]
@@ -258,4 +323,49 @@ func (elem *Element) Title(title string) *Element {
 func (elem *Element) Redirect(url string) *Element {
 	elem.Root.RedirectURL = url
 	return elem
+}
+
+func (elem *Element) Bind(data interface{}) *Element {
+	inputElement := elem.GetInput()
+	if inputElement != nil {
+		inputElement.BindedData = data
+	}
+	return elem
+}
+func (elem *Element) Unbind() *Element {
+	elem.BindedData = nil
+	return elem
+}
+func (elem *Element) GetValue() string {
+	if elem.BindedData != nil {
+		if reflect.TypeOf(elem.BindedData).String() == "*string" {
+			return *(elem.BindedData).(*string)
+		}
+		if reflect.TypeOf(elem.BindedData).String() == "*int" {
+			return strconv.Itoa(*(elem.BindedData).(*int))
+		}
+		if reflect.TypeOf(elem.BindedData).String() == "*bool" {
+			return strconv.FormatBool(*(elem.BindedData).(*bool))
+		}
+		return ""
+	}
+	return elem.Value
+}
+
+func (elem *Element) GetValueInt() int {
+	if elem.BindedData != nil {
+		if reflect.TypeOf(elem.BindedData).String() == "*int" {
+			return *(elem.BindedData).(*int)
+		}
+	}
+	value, _ := strconv.Atoi(elem.Value)
+	return value
+}
+func (elem *Element) Focus() *Element {
+	elem.GetInput().Attribute("autofocus", "true")
+	return elem
+}
+
+func isInput(tag string) bool {
+	return tag == "input" || tag == "textarea" || tag == "select"
 }

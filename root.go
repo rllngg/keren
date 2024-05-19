@@ -57,9 +57,8 @@ func (root *Root) GetElementById(ID string) *Element {
 func (root *Root) UpdateValue(ID string, value string) *Element {
 	// update the view
 	elem := root.GetElementById(ID)
-	if elem != nil {
-		elem.Value = value
-		elem.ForceChange()
+	if elem != nil && elem.AllowEditing {
+		elem.SetValue(value)
 	}
 	return elem
 

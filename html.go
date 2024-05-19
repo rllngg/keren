@@ -11,6 +11,8 @@ func HTMLTag(node *Node, isChildren bool) string {
 	if true {
 		// join attributes with space
 		attributes := ""
+		node.Element.CallOnRender()
+
 		endTag = "</" + node.Element.Tag + ">"
 
 		for key, value := range *node.Element.Attributes {
@@ -32,8 +34,9 @@ func HTMLTag(node *Node, isChildren bool) string {
 		if classes != "" {
 			attributes += "class='" + classes + "' "
 		}
-		if node.Element.Value != "" {
-			attributes += "value='" + node.Element.Value + "' "
+		value := node.Element.GetValue()
+		if value != "" {
+			attributes += "value='" + value + "' "
 		}
 
 		result += "<" + node.Element.Tag + " id='" + node.Element.ID + "' " + style + " " + attributes + ">"

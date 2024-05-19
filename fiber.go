@@ -1,7 +1,6 @@
 package keren
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
 
@@ -46,7 +45,6 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 			id := uuid.New().String()
 			pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
 			pages[id].CurrentURL = c.OriginalURL()
-			fmt.Println("Current URL : ", c.OriginalURL())
 			handler(pages[id], c)
 			output := BuildHTML(pages[id])
 
@@ -85,22 +83,29 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 
 			// Update the root object with the parsed values
 			obj := map[string]Data{}
+			totalError := 0
 			for k, v := range values {
 				if len(v) > 0 {
 					elem := root.UpdateValue(k, v[0])
 					if elem.Validation != "" {
 						errs := validate.Var(v[0], elem.Validation)
+						// reset
+						elem.RemoveClass("is-valid").RemoveClass("is-invalid").Parent.RemoveChildrenWithTag("div").RemoveClass("has-validation")
 						if errs != nil {
-							parent := elem.Parent.RemoveChildrenWithTag("div").Append(root.AlertMessage(errs.Error(), "danger"))
-
-							return Response(c, parent)
+							message := errs.Error()
+							if elem.ErrorMessage != "" {
+								message = elem.ErrorMessage
+							}
+							elem.AddClass("is-invalid").Parent.RemoveChildrenWithTag("div").Append(root.InvalidFeedback(message)).AddClass("has-validation")
+							totalError++
+						} else {
+							elem.AddClass("is-valid").Parent.RemoveChildrenWithTag("div")
 						}
 					}
 					obj[elem.Name] = Data{
 						Value: v[0],
 						File:  nil,
 					}
-					fmt.Println("Element Name : ", elem.Name, "Value : ", v[0])
 					if elem.Tag == "input" {
 						if elem.HasAttribute("type") && elem.GetAttribute("type") == "file" {
 							file, err := c.FormFile(k)
@@ -114,6 +119,11 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 
 					}
 				}
+			}
+			if totalError > 0 {
+				// form
+
+				return Response(c, root.GetElementById(elementID))
 			}
 
 			// Set the response content type to HTML

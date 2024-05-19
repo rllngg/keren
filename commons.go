@@ -20,6 +20,19 @@ func (root *Root) Input(htmlType string, name string, placeholder string, label 
 func (root *Root) TextInput(name string, placeholder string, label string) *Element {
 	return root.Input("text", name, placeholder, label)
 }
+func (root *Root) NumberInput(name string, placeholder string, label string) *Element {
+	return root.Input("number", name, placeholder, label)
+}
+func (root *Root) EmailInput(name string, placeholder string, label string) *Element {
+	return root.Input("email", name, placeholder, label)
+}
+func (root *Root) DateInput(name string, placeholder string, label string) *Element {
+	return root.Input("date", name, placeholder, label)
+}
+func (root *Root) TimeInput(name string, placeholder string, label string) *Element {
+	return root.Input("time", name, placeholder, label)
+}
+
 func (root *Root) PasswordInput(name string, placeholder string, label string) *Element {
 	return root.Input("password", name, placeholder, label)
 }
@@ -27,6 +40,11 @@ func (root *Root) Checkbox(name string, text string) *Element {
 	checkbox := root.Input("checkbox", name, text, "").Class("form-check")
 	checkbox.GetInput().Class("form-check-input")
 	checkbox.Append(root.Span(text).Class("pl-2 form-check-label"))
+	checkbox.GetInput().OnRender(func(e *Element) {
+		if e.GetValue() == "true" {
+			e.Attribute("checked", "checked")
+		}
+	})
 	return checkbox
 }
 func (root *Root) Break() *Element {
@@ -183,21 +201,33 @@ func (root *Root) Select(name string, label string, options [][]string) *Element
 	return group
 }
 func (root *Root) Option(value string, text string) *Element {
-	return NewElement(root, "option").Text(text).Attribute("value", value)
+	return NewElement(root, "option").Text(text).SetValue(value).OnRender(func(e *Element) {
+		if e.Parent.GetValue() == e.GetValue() {
+			e.Attribute("selected", "selected")
+		}
+	})
 }
-func (root *Root) TextArea(name string, placeholder string) *Element {
-	elem := NewElement(root, "textarea").Attribute("placeholder", placeholder)
+func (root *Root) TextArea(name string, label string) *Element {
+	elem := NewElement(root, "textarea").Class("form-control")
 	elem.Attribute("name", elem.ID)
 	elem.SetName(name)
-	elem.Text(placeholder).Class("form-control")
-	return elem
+	elem.Attribute("rows", "10")
+	elem.OnRender(func(e *Element) {
+		e.TextContent = e.GetValue()
+	})
+
+	group := NewElement(root, "div").Class("form-floating")
+	group.Append(elem)
+	group.Append(root.Label(label).Attribute("for", elem.ID))
+
+	return group
 }
 
 func (root *Root) Label(text string) *Element {
 	return NewElement(root, "label").Text(text)
 }
 func (root *Root) FileInput() *Element {
-	return root.Input("file", "file", "", "")
+	return root.Input("file", "file", "", "").Class("")
 }
 func (root *Root) AlertMessage(message string, variant string) *Element {
 	return NewElement(root, "div").Class("alert alert-" + variant).SetInnerHTML(message)
@@ -209,4 +239,11 @@ func (root *Root) FaIcon(icon string) *Element {
 }
 func (root *Root) FeatherIcon(icon string) *Element {
 	return NewElement(root, "i").Attr("data-feather", icon)
+}
+
+func (root *Root) Flex(children ...*Element) *Element {
+	return NewElement(root, "div").Class("d-flex gap-2").AppendChildren(children...)
+}
+func (root *Root) InvalidFeedback(text string) *Element {
+	return NewElement(root, "div").Class("invalid-feedback").SetInnerHTML(text)
 }
