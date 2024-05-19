@@ -24,7 +24,7 @@ func main() {
 
 	// common components
 	fiber.All("/", keren.FiberHandler(ui.Hello))
-	fiber.All("/example/forms", keren.FiberHandler(ui.Forms))
+	fiber.All("/example/components", keren.FiberHandler(ui.Components))
 	fiber.All("/example/tables", keren.FiberHandler(ui.TableExample))
 
 	fiber.All("/example-bottom", keren.FiberHandler(ui.Hello))

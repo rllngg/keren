@@ -18,7 +18,7 @@ type SimpleForm struct {
 	selectData string
 }
 
-func Forms(app *keren.Root, ctx *fiber.Ctx) error {
+func Components(app *keren.Root, ctx *fiber.Ctx) error {
 	sform := SimpleForm{
 		email:      "keren@keren.com",
 		username:   "test",
@@ -63,7 +63,7 @@ func Forms(app *keren.Root, ctx *fiber.Ctx) error {
 							).Confirm("Anda Yakin ?").DisableInputOnRequest().OnSubmit(func(event *keren.Event) *keren.Element {
 								//123
 								// sleep 3 second
-								return event.Element.Body(app.Modal("modal1", app.P("Modal Content"), app.Div()).AddClass("mt-2"))
+								return event.Element.Body(app.Modal("", app.P("Success"), app.Div()).AddClass("mt-2"))
 							}),
 						),
 					),
@@ -83,16 +83,37 @@ func Forms(app *keren.Root, ctx *fiber.Ctx) error {
 							}),
 						),
 					),
-				).Title("Forms"),
-				app.NavTabs(
-					app.Tab(app.P("Tab 1"), app.P("Tab 1 Content")),
-					app.Tab(app.P("Tab 2"), app.Div(
-						app.Button("Click Me", "primary").OnClick(func(event *keren.Event) *keren.Element {
-							return event.Element.Text("Clicked")
-						}),
-					)),
 				),
-			).Class("container mt-2"),
-		).AddClass(""),
-	)
+				app.Break(),
+				app.Card(
+					app.CardBody(
+						app.H1("Tabs"),
+						app.NavTabs(
+							app.Tab(app.P("Tab 1"), app.P("Tab 1 Content")),
+							app.Tab(app.P("Tab 2"), app.Div(
+								app.Button("Click Me", "primary").OnClick(func(event *keren.Event) *keren.Element {
+									return event.Element.Text("Clicked")
+								}),
+							)),
+						),
+					),
+				),
+				app.Break(),
+				app.Card(
+					app.CardBody(
+						app.H1("Modals"),
+						app.Button("Open Modal", "primary").OnClick(func(event *keren.Event) *keren.Element {
+							return event.Element.Parent.Body(app.Modal("modal1", app.P("Modal Content"), app.Div()).AddClass("mt-2"))
+						}),
+					),
+				),
+				app.Break(),
+				app.Card(
+					app.CardBody(
+						app.H1("Popoevers"),
+						app.Button("Open Popover", "primary").Popover("popover1", "Popover Content").AddClass("ms-2"),
+					),
+				),
+			).AddClass("container"),
+		).Title("Components"))
 }

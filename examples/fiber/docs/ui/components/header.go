@@ -13,7 +13,7 @@ func Navigation(root *keren.Root) *keren.Element {
 					root.Link("Home", "/").AddClass("nav-link text-white"),
 				),
 				root.NavItem(
-					root.Link("Forms", "/example/forms").AddClass("nav-link text-white"),
+					root.Link("Components", "/example/components").AddClass("nav-link text-white"),
 				),
 				root.NavItem(
 					root.Link("Tables", "/example/tables").AddClass("nav-link text-white"),
@@ -23,7 +23,7 @@ func Navigation(root *keren.Root) *keren.Element {
 	}
 	return root.BottomNavigation(
 		root.BottomNaviItem("Home", "/", "home"),
-		root.BottomNaviItem("Forms", "/example/forms", "list"),
+		root.BottomNaviItem("Components", "/example/components", "list"),
 		root.BottomNaviItem("Tables", "/example/tables", "table"),
 	).AddClass("bg-primary")
 }

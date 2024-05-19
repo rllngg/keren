@@ -264,15 +264,22 @@ func (root *Root) Tab(head *Element, content *Element) *NavTab {
 func (root *Root) NavTabs(tabs ...*NavTab) *Element {
 	ul := NewElement(root, "ul").Class("nav nav-tabs").Attribute("role", "tablist")
 	div := NewElement(root, "div").Class("tab-content")
-	for _, tab := range tabs {
-		btn := root.Button("", "").Body(tab.Header).Attr("data-bs-toggle", "tab").Attr("role", "tab").Attr("type", "button").Attr("aria-selected", "false")
+	for i, tab := range tabs {
+		btn := root.Btn().Class("nav-link").Body(tab.Header).Attr("data-bs-toggle", "tab").Attr("role", "tab").Attr("type", "button").Attr("aria-selected", "false")
 		ul.Append(root.Li(btn).Class("nav-item").Attr("role", "presentation"))
 
 		content := root.Div(tab.Content).Class("tab-pane fade").Attr("role", "tabpanel")
+		if i == 0 {
+			// btn.Class("active").Attr("aria-selected", "true")
+			// content.Class("active show")
+			content.Append(root.Script(`
+				document.getElementById("` + tab.Header.ID + `").click()`))
+		}
 		div.Append(content)
 		btn.Attribute("data-bs-target", "#"+content.ID)
 
 	}
+
 	return root.Div(ul, div).Class("nav-tabs")
 }
 func (root *Root) Modal(title string, body *Element, footer *Element) *Element {

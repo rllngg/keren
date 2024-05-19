@@ -392,3 +392,10 @@ func (elem *Element) Confirm(message string) *Element {
 	elem.Attribute("hx-confirm", message)
 	return elem
 }
+func (elem *Element) Popover(title string, message string) *Element {
+	// bootstrap popover
+	elem.Attribute("data-bs-toggle", "popover")
+	elem.Attribute("data-bs-content", message)
+	elem.Attribute("data-bs-title", title)
+	return elem
+}
