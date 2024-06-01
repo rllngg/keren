@@ -25,12 +25,12 @@ func main() {
 	fiber.Static("/static", "./static")
 
 	// common components
-	fiber.All("/", kerenFiber.FiberHandler(ui.Hello))
-	fiber.All("/example/components", kerenFiber.FiberHandler(ui.Components))
-	fiber.All("/example/tables", kerenFiber.FiberHandler(ui.TableExample))
+	fiber.All("/", kerenFiber.Handle(ui.Hello))
+	fiber.All("/example/components", kerenFiber.Handle(ui.Components))
+	fiber.All("/example/tables", kerenFiber.Handle(ui.TableExample))
 
-	fiber.All("/example-bottom", kerenFiber.FiberHandler(ui.Hello))
-	fiber.All("/forms-inputs-button", kerenFiber.FiberHandler(ui.Hello))
+	fiber.All("/example-bottom", kerenFiber.Handle(ui.Hello))
+	fiber.All("/forms-inputs-button", kerenFiber.Handle(ui.Hello))
 
 	//
 	fiber.Listen(":3000")

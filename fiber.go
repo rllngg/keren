@@ -13,9 +13,9 @@ import (
 
 type FiberKerenAdapter struct {
 	storeSession *session.Store
+	pages        map[string]*Root
 }
 
-var pages = make(map[string]*Root)
 var validate *validator.Validate
 
 func init() {
@@ -48,9 +48,10 @@ func Response(c *fiber.Ctx, elem *Element) error {
 func NewFiberKerenAdapter(store *session.Store) *FiberKerenAdapter {
 	return &FiberKerenAdapter{
 		storeSession: store,
+		pages:        map[string]*Root{},
 	}
 }
-func (ctx *FiberKerenAdapter) FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error {
+func (ctx *FiberKerenAdapter) Handle(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		sess, err := ctx.storeSession.Get(c)
 		defer sess.Save()
@@ -65,10 +66,10 @@ func (ctx *FiberKerenAdapter) FiberHandler(handler func(*Root, *fiber.Ctx) error
 				sess.Set("page_id", id)
 			}
 			fmt.Println("Session ID", id)
-			pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
-			pages[id].CurrentURL = c.OriginalURL()
-			handler(pages[id], c)
-			output := BuildHTML(pages[id])
+			ctx.pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
+			ctx.pages[id].CurrentURL = c.OriginalURL()
+			handler(ctx.pages[id], c)
+			output := BuildHTML(ctx.pages[id])
 
 			return c.Render("index", fiber.Map{
 				"Content": output,
@@ -85,7 +86,7 @@ func (ctx *FiberKerenAdapter) FiberHandler(handler func(*Root, *fiber.Ctx) error
 			fmt.Println("Session ID", pageID)
 
 			// Retrieve the root object associated with the page ID
-			root := pages[pageID]
+			root := ctx.pages[pageID]
 			if root == nil {
 				c.Set("HX-Refresh", "true")
 				return c.SendString("Refresh")
