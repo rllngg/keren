@@ -1,13 +1,19 @@
 package keren
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/google/uuid"
 )
+
+type FiberKerenAdapter struct {
+	storeSession *session.Store
+}
 
 var pages = make(map[string]*Root)
 var validate *validator.Validate
@@ -16,6 +22,7 @@ func init() {
 	validate = validator.New()
 
 }
+
 func DetectDevice(agent string) string {
 	if strings.Contains(agent, "Mobile") {
 		return "mobile"
@@ -38,11 +45,26 @@ func Response(c *fiber.Ctx, elem *Element) error {
 	c.SendString(HTMLTag(NewNode(elem), false))
 	return nil
 }
-func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error {
+func NewFiberKerenAdapter(store *session.Store) *FiberKerenAdapter {
+	return &FiberKerenAdapter{
+		storeSession: store,
+	}
+}
+func (ctx *FiberKerenAdapter) FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		sess, err := ctx.storeSession.Get(c)
+		defer sess.Save()
+		if err != nil {
+			return err
+		}
 		if c.Method() == "GET" {
-
-			id := uuid.New().String()
+			idInterface := sess.Get("page_id")
+			id, ok := idInterface.(string)
+			if !ok || id == "" {
+				id = uuid.New().String()
+				sess.Set("page_id", id)
+			}
+			fmt.Println(id)
 			pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
 			pages[id].CurrentURL = c.OriginalURL()
 			handler(pages[id], c)
@@ -54,9 +76,10 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 			})
 		} else {
 			// Retrieve the page ID from the request headers
-			pageID := c.Get("Hx-Page-Id")
-
-			if pageID == "" {
+			idInterface := sess.Get("page_id")
+			pageID, ok := idInterface.(string)
+			fmt.Println("pageID", pageID, ok)
+			if !ok || pageID == "" {
 				c.Set("HX-Refresh", "true")
 				return c.SendString("Refresh")
 			}
