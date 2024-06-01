@@ -46,7 +46,7 @@ func Components(app *keren.Root, ctx *fiber.Ctx) error {
 								),
 								app.NumberInput("age", "18", "Age").Validate("required,min=0,max=100", "Age harus diisi").Bind(&sform.age),
 								app.TextInput("email", "email@gmail.com", "Email").Validate("email,min=4,max=100", "Email Wajib disi dengan valid email").Bind(&sform.email),
-								app.TextInput("username", "@username", "Username").Validate("min=24,max=32", "Username harus di isi").Bind(&sform.username),
+								app.TextInput("username", "@username", "Username").Validate("min=4,max=32", "Username harus di isi").Bind(&sform.username),
 								app.PasswordInput("password", "***", "Password").Bind(&sform.password).Validate("required,min=4,max=32", "Password harus diisi"),
 								app.Checkbox("is_go_developer", "I am Go Developer").Validate("required", "Harus Go  Developer").Bind(&sform.remember),
 								app.TextArea("message", "Message").Validate("required,min=0,max=10", "Pesan Harus di isi").Bind(&sform.message),
