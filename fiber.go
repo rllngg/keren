@@ -87,6 +87,9 @@ func FiberHandler(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error 
 			for k, v := range values {
 				if len(v) > 0 {
 					elem := root.UpdateValue(k, v[0])
+					if elem == nil {
+						continue
+					}
 					if elem.Validation != "" {
 						errs := validate.Var(v[0], elem.Validation)
 						// reset
