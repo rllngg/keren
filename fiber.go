@@ -1,7 +1,6 @@
 package keren
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
 
@@ -65,7 +64,6 @@ func (ctx *FiberKerenAdapter) Handle(handler func(*Root, *fiber.Ctx) error) func
 				id = uuid.New().String()
 				sess.Set("page_id", id)
 			}
-			fmt.Println("Session ID", id)
 			ctx.pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
 			ctx.pages[id].CurrentURL = c.OriginalURL()
 			handler(ctx.pages[id], c)
@@ -83,7 +81,6 @@ func (ctx *FiberKerenAdapter) Handle(handler func(*Root, *fiber.Ctx) error) func
 				c.Set("HX-Refresh", "true")
 				return c.SendString("Refresh")
 			}
-			fmt.Println("Session ID", pageID)
 
 			// Retrieve the root object associated with the page ID
 			root := ctx.pages[pageID]
