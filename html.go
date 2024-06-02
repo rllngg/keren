@@ -28,28 +28,28 @@ func HTMLTag(node *Node, isChildren bool) string {
 		}
 		style := ""
 		if len(node.Element.Styles) > 0 {
-			style = "style='"
+			style = `style="`
 			for key, value := range node.Element.Styles {
 				style += key + ":" + value + ";"
 			}
-			style += "'"
+			style += `"`
 		}
 		if classes != "" {
-			attributes += "class='" + classes + "' "
+			attributes += `class="` + classes + `" `
 		}
 		value := node.Element.GetValue()
 		if value != "" {
-			attributes += "value='" + value + "' "
+			attributes += `value="` + value + `" `
 		}
 
-		result += "<" + node.Element.Tag + " id='" + node.Element.ID + "' " + style + " " + attributes + ">"
+		result += `<` + node.Element.Tag + ` id="` + node.Element.ID + `" ` + style + ` ` + attributes + `>`
 		if node.Element.TextContent != "" {
 			result += node.Element.TextContent
 		}
 
 	}
 	if !isChildren && node.Element.Root.Title != "" {
-		result += "<script>document.title = '" + node.Element.Root.Title + "'</script>"
+		result += `<script>document.title = "` + node.Element.Root.Title + `" </script>`
 		node.Element.Root.Title = ""
 	}
 	for _, child := range node.Children {
