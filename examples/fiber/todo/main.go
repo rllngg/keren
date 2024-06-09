@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/erlanggatampan/keren/examples/fiber/todo/ui"
 	"html/template"
 
 	"github.com/erlanggatampan/keren"
-	"github.com/erlanggatampan/keren/examples/fiber/docs/ui"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
 )
@@ -23,12 +23,7 @@ func main() {
 	fiber.Static("/static", "./static")
 
 	// common components
-	fiber.All("/", kerenFiber.Handle(ui.Hello))
-	fiber.All("/example/components", kerenFiber.Handle(ui.Components))
-	fiber.All("/example/tables", kerenFiber.Handle(ui.TableExample))
-
-	fiber.All("/example-bottom", kerenFiber.Handle(ui.Hello))
-	fiber.All("/forms-inputs-button", kerenFiber.Handle(ui.Hello))
+	fiber.All("/", kerenFiber.Handle(ui.TodoApp))
 
 	//
 	fiber.Listen(":3000")

@@ -13,7 +13,7 @@ type BindType interface {
 }
 type Element struct {
 	ID           string
-	Root         *Root
+	App          *App
 	Tag          string
 	Name         string
 	Attributes   *map[string]string
@@ -27,16 +27,16 @@ type Element struct {
 	Changed      bool
 	ShownLimit   int
 	Validation   string
-	BindedData   interface{}
+	BoundData    interface{}
 	ErrorMessage string
 	AllowEditing bool
 	HookOnRender func(*Element)
 }
 
-func NewElement(root *Root, tag string) *Element {
+func NewElement(app *App, tag string) *Element {
 
 	elem := &Element{
-		Root:         root,
+		App:          app,
 		ID:           Identifier(),
 		Tag:          tag,
 		Attributes:   &map[string]string{},
@@ -50,7 +50,9 @@ func NewElement(root *Root, tag string) *Element {
 		AllowEditing: true,
 		ErrorMessage: "",
 	}
-	root.RegisterElement(elem)
+	if app != nil {
+		app.RegisterElement(elem)
+	}
 	return elem
 }
 func (elem *Element) ForceChange() {
@@ -75,7 +77,7 @@ func (elem *Element) Text(text string) *Element {
 	return elem
 }
 func (elem *Element) Trigger(name string) *Element {
-	elem.Root.PublishEvent(name)
+	elem.App.PublishEvent(name)
 	return elem
 }
 func (elem *Element) Class(classes ...string) *Element {
@@ -181,18 +183,18 @@ func (elem *Element) SetEditing(allow bool) *Element {
 	return elem
 }
 func (elem *Element) SetValue(value string) *Element {
-	if elem.BindedData != nil {
-		if reflect.TypeOf(elem.BindedData).String() == "*string" {
-			reflect.ValueOf(elem.BindedData).Elem().Set(reflect.ValueOf(value))
+	if elem.BoundData != nil {
+		if reflect.TypeOf(elem.BoundData).String() == "*string" {
+			reflect.ValueOf(elem.BoundData).Elem().Set(reflect.ValueOf(value))
 
 		}
-		if reflect.TypeOf(elem.BindedData).String() == "*int" {
+		if reflect.TypeOf(elem.BoundData).String() == "*int" {
 			intValue, _ := strconv.Atoi(value)
-			reflect.ValueOf(elem.BindedData).Elem().Set(reflect.ValueOf(intValue))
+			reflect.ValueOf(elem.BoundData).Elem().Set(reflect.ValueOf(intValue))
 		}
-		if reflect.TypeOf(elem.BindedData).String() == "*bool" {
+		if reflect.TypeOf(elem.BoundData).String() == "*bool" {
 			boolValue, _ := strconv.ParseBool(value)
-			reflect.ValueOf(elem.BindedData).Elem().Set(reflect.ValueOf(boolValue))
+			reflect.ValueOf(elem.BoundData).Elem().Set(reflect.ValueOf(boolValue))
 		}
 	}
 	elem.Value = value
@@ -231,7 +233,7 @@ func (elem *Element) RemoveAllEvent() *Element {
 	return elem.Attr("hx-trigger", "")
 }
 func (elem *Element) OnEvery(time int, cb func(event *Event) *Element) *Element {
-	return elem.SetEvent("test every "+strconv.Itoa(time), &cb).SetEvent("default", &cb)
+	return elem.SetEvent("every "+strconv.Itoa(time), &cb).SetEvent("default", &cb)
 
 }
 func (elem *Element) OnLoad(cb func(event *Event) *Element) *Element {
@@ -258,10 +260,14 @@ func (elem *Element) RemoveChildrenWithTag(tag string) *Element {
 func (elem *Element) Append(child *Element) *Element {
 	elem.Children = append(elem.Children, child)
 	child.Parent = elem
+	if elem.App != nil {
+		elem.App.RegisterElement(child)
+	}
 	return elem
 }
 func (elem *Element) AppendChildren(children ...*Element) *Element {
 	for _, child := range children {
+
 		elem.Append(child)
 	}
 	return elem
@@ -278,37 +284,56 @@ func (elem *Element) GetInput() *Element {
 	}
 	return elem.Children[0]
 }
+func (elem *Element) RunValidation(data string) error {
+	if elem.Validation == "" {
+		return nil
+	}
+	// Reset Previous State
+	elem.RemoveClass("is-valid").RemoveClass("is-invalid").Parent.RemoveChildrenWithTag("div").RemoveClass("has-validation")
+	errs := validate.Var(data, elem.Validation)
+	if errs == nil {
+		elem.AddClass("is-valid").Parent.RemoveChildrenWithTag("div")
+		return nil
+	}
+	//
+	message := errs.Error()
+	if elem.ErrorMessage != "" {
+		message = elem.ErrorMessage
+	}
+	elem.AddClass("is-invalid").Parent.RemoveChildrenWithTag("div").Append(InvalidFeedback(message)).AddClass("has-validation")
+	return errs
 
+}
 func (elem *Element) Validate(validation string, errorMessage string) *Element {
 	inputElement := elem.GetInput()
 	if inputElement == nil || !inputElement.HasAttribute("name") {
 		return elem
 	}
-	inputElement.Validation = validation
 	inputElement.ErrorMessage = errorMessage
 	// split text ,
 	validations := strings.Split(validation, ",")
+	validations_fix := make([]string, 0)
 	for _, v := range validations {
 		// required
+		validations_fix = append(validations_fix, strings.TrimLeft(v, " "))
+		splitData := strings.Split(v, "=")
 		switch {
 		case v == "required":
 			inputElement.Attribute("required", "true")
 		case strings.Contains(v, "min"):
-			min := strings.Split(v, "=")
-			inputElement.Attribute("minlength", min[1])
+			inputElement.Attribute("minlength", splitData[1])
 		case strings.Contains(v, "max"):
-			max := strings.Split(v, "=")
-			inputElement.Attribute("maxlength", max[1])
+			inputElement.Attribute("maxlength", splitData[1])
 		case strings.Contains(v, "lt"):
-			lt := strings.Split(v, "=")
-			inputElement.Attribute("max", lt[1])
+			inputElement.Attribute("max", splitData[1])
 		case strings.Contains(v, "gt"):
-			gt := strings.Split(v, "=")
-			inputElement.Attribute("min", gt[1])
+			inputElement.Attribute("min", splitData[1])
 		case v == "email":
 			inputElement.Attribute("type", "email")
 		}
 	}
+	inputElement.Validation = strings.Join(validations_fix, ",")
+
 	return elem
 }
 func (elem *Element) Error(message string) *Element {
@@ -322,35 +347,39 @@ func (elem *Element) HasAttribute(attribute string) bool {
 	return ok
 }
 func (elem *Element) Title(title string) *Element {
-	elem.Root.Title = title
+	if elem.App != nil {
+		elem.App.Title(title)
+
+	}
+
 	return elem
 }
 func (elem *Element) Redirect(url string) *Element {
-	elem.Root.RedirectURL = url
+	elem.App.RedirectURL = url
 	return elem
 }
 
 func (elem *Element) Bind(data interface{}) *Element {
 	inputElement := elem.GetInput()
 	if inputElement != nil {
-		inputElement.BindedData = data
+		inputElement.BoundData = data
 	}
 	return elem
 }
 func (elem *Element) Unbind() *Element {
-	elem.BindedData = nil
+	elem.BoundData = nil
 	return elem
 }
 func (elem *Element) GetValue() string {
-	if elem.BindedData != nil {
-		if reflect.TypeOf(elem.BindedData).String() == "*string" {
-			return *(elem.BindedData).(*string)
+	if elem.BoundData != nil {
+		if reflect.TypeOf(elem.BoundData).String() == "*string" {
+			return *(elem.BoundData).(*string)
 		}
-		if reflect.TypeOf(elem.BindedData).String() == "*int" {
-			return strconv.Itoa(*(elem.BindedData).(*int))
+		if reflect.TypeOf(elem.BoundData).String() == "*int" {
+			return strconv.Itoa(*(elem.BoundData).(*int))
 		}
-		if reflect.TypeOf(elem.BindedData).String() == "*bool" {
-			return strconv.FormatBool(*(elem.BindedData).(*bool))
+		if reflect.TypeOf(elem.BoundData).String() == "*bool" {
+			return strconv.FormatBool(*(elem.BoundData).(*bool))
 		}
 		return ""
 	}
@@ -358,9 +387,9 @@ func (elem *Element) GetValue() string {
 }
 
 func (elem *Element) GetValueInt() int {
-	if elem.BindedData != nil {
-		if reflect.TypeOf(elem.BindedData).String() == "*int" {
-			return *(elem.BindedData).(*int)
+	if elem.BoundData != nil {
+		if reflect.TypeOf(elem.BoundData).String() == "*int" {
+			return *(elem.BoundData).(*int)
 		}
 	}
 	value, _ := strconv.Atoi(elem.Value)
@@ -404,6 +433,11 @@ func (elem *Element) Popover(title string, message string) *Element {
 	return elem
 }
 func (elem *Element) PublishEvent(name string) *Element {
-	elem.Root.PublishEvent(name)
+	elem.App.PublishEvent(name)
 	return elem
+}
+func (elem *Element) SetApp(app *App) {
+	if app != nil {
+		app.RegisterElement(elem)
+	}
 }

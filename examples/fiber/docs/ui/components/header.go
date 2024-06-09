@@ -1,29 +1,41 @@
 package components
 
 import (
-	"github.com/erlanggatampan/keren"
+	. "github.com/erlanggatampan/keren"
 )
 
-func Navigation(root *keren.Root) *keren.Element {
-	if root.IsDesktop() {
-		return root.Navbar(
-			root.Span("Keren UI").Class("text-white"),
-			root.Ul(
-				root.NavItem(
-					root.Link("Home", "/").AddClass("nav-link text-white"),
+func Navigation(app *App) *Element {
+	if app.IsDesktop() {
+		return Navbar(
+			Span("Keren UI").Class("text-white"),
+			Ul(
+				NavItem(
+					Link("Home", "/").AddClass("nav-link text-white").OnRender(func(this *Element) {
+						if this.App.CurrentURL == "/" {
+							this.AddClass("active")
+						}
+					}),
 				),
-				root.NavItem(
-					root.Link("Components", "/example/components").AddClass("nav-link text-white"),
+				NavItem(
+					Link("Components", "/example/components").AddClass("nav-link text-white").OnRender(func(this *Element) {
+						if this.App.CurrentURL == "/example/components" {
+							this.AddClass("active")
+						}
+					}),
 				),
-				root.NavItem(
-					root.Link("Tables", "/example/tables").AddClass("nav-link text-white"),
+				NavItem(
+					Link("Tables", "/example/tables").AddClass("nav-link text-white").OnRender(func(this *Element) {
+						if this.App.CurrentURL == "/example/tables" {
+							this.AddClass("active")
+						}
+					}),
 				),
 			).Class("navbar-nav me-auto mb-2 mb-lg-0"),
 		).AddClass("bg-primary navbar-dark")
 	}
-	return root.BottomNavigation(
-		root.BottomNaviItem("Home", "/", "home"),
-		root.BottomNaviItem("Components", "/example/components", "list"),
-		root.BottomNaviItem("Tables", "/example/tables", "table"),
+	return BottomNavigation(
+		BottomNaviItem("Home", "/", "home"),
+		BottomNaviItem("Components", "/example/components", "list"),
+		BottomNaviItem("Tables", "/example/tables", "table"),
 	).AddClass("bg-primary")
 }

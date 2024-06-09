@@ -1,18 +1,18 @@
 package keren
 
 import (
-	"net/url"
-	"strings"
-
+	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/google/uuid"
+	"net/url"
+	"strings"
+	"time"
 )
 
 type FiberKerenAdapter struct {
-	storeSession *session.Store
-	pages        map[string]*Root
+	Sessions       map[string]*App
+	SessionTimeout time.Duration
 }
 
 var validate *validator.Validate
@@ -29,65 +29,94 @@ func DetectDevice(agent string) string {
 	return "desktop"
 
 }
-func UseKerenWithFiber() {
-	// handle css, js
-	/// handle func template
-}
-func Response(c *fiber.Ctx, elem *Element) error {
-	if elem.Root.RedirectURL != "" {
-		c.Set("HX-Redirect", elem.Root.RedirectURL)
-		elem.Root.RedirectURL = ""
-	}
-	c.Set("HX-Retarget", "#"+elem.ID)
-	c.Set("HX-Reswap", "outerHTML")
-	c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
-	c.SendString(HTMLTag(NewNode(elem), false))
-	return nil
-}
-func NewFiberKerenAdapter(store *session.Store) *FiberKerenAdapter {
-	return &FiberKerenAdapter{
-		storeSession: store,
-		pages:        map[string]*Root{},
-	}
-}
-func (ctx *FiberKerenAdapter) Handle(handler func(*Root, *fiber.Ctx) error) func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		sess, err := ctx.storeSession.Get(c)
-		defer sess.Save()
-		if err != nil {
-			return err
-		}
-		if c.Method() == "GET" {
-			idInterface := sess.Get("page_id")
-			id, ok := idInterface.(string)
-			if !ok || id == "" {
-				id = uuid.New().String()
-				sess.Set("page_id", id)
-			}
-			ctx.pages[id] = NewRoot(DetectDevice(string(c.Request().Header.UserAgent())))
-			ctx.pages[id].CurrentURL = c.OriginalURL()
-			handler(ctx.pages[id], c)
-			output := BuildHTML(ctx.pages[id])
 
+func Response(c *fiber.Ctx, elem *Element) error {
+	response := elem.App.BuildHTML(elem)
+	if response.RedirectURL != "" {
+		c.Set("HX-Redirect", response.RedirectURL)
+	}
+
+	c.Set("HX-Retarget", "body")
+	c.Set("HX-Reswap", "outerHTML")
+	if elem != nil {
+		c.Set("HX-Retarget", "#"+elem.ID)
+	}
+	c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+
+	return c.SendString(response.HTML)
+}
+func NewFiberKerenAdapter(timeout int) *FiberKerenAdapter {
+	adapter := &FiberKerenAdapter{
+		Sessions:       map[string]*App{},
+		SessionTimeout: time.Duration(timeout) * time.Second,
+	}
+	// Remove Sessions everytimeout
+	fmt.Println("[KERENFIBER] Waiting for sessions collector...")
+	go func() {
+		for {
+			fmt.Println("[KERENFIBER] Waiting for sessions collector...")
+			time.Sleep(adapter.SessionTimeout * time.Second)
+			adapter.CleanSessions()
+		}
+	}()
+	return adapter
+}
+func (adapter *FiberKerenAdapter) CleanSessions() {
+	totalDeleted := 0
+	fmt.Println("[KERENFIBER] Sessions Size ", Of(adapter.Sessions)/10000, "mb")
+	fmt.Println("[KERENFIBER] Clearing Sessions")
+	for id, session := range adapter.Sessions {
+		// check if session has timed out
+		if time.Now().After(session.LastUpdate.Add(adapter.SessionTimeout)) {
+			// if it has, remove it from your session manager
+			delete(adapter.Sessions, id)
+			totalDeleted++
+		}
+	}
+	fmt.Println("[KERENFIBER] Cleared Sessions Size ", Of(adapter.Sessions)/10000, "mb")
+	fmt.Println("[KERENFIBER] Total Cleared Sessions")
+}
+func (adapter *FiberKerenAdapter) Handle(handler func(*App, *fiber.Ctx) error) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		if c.Method() == "GET" {
+			initialize := false
+			appID := c.Get("Hx-App-ID")
+			var app *App
+			if appID == "" {
+				appID = uuid.New().String()
+				initialize = true
+			}
+			app = NewApp(DetectDevice(string(c.Request().Header.UserAgent())))
+			app.Lock()
+			defer app.Unlock()
+			adapter.Sessions[appID] = app
+			app.CurrentURL = c.OriginalURL()
+			handler(app, c)
+
+			println(appID, " : ", Of(app)/1000, "kb")
+			println("Session Holder : ", Of(adapter.Sessions)/1000, "kb")
+
+			response := app.BuildHTML(nil)
+			if !initialize {
+				c.Set("HX-Retarget", "body")
+				c.Set("HX-Reswap", "outerHTML")
+			}
 			return c.Render("index", fiber.Map{
-				"Content": output,
-				"PageID":  id,
+				"Content": response.HTML,
+				"AppID":   appID,
 			})
 		} else {
 			// Retrieve the page ID from the request headers
-			idInterface := sess.Get("page_id")
-			pageID, ok := idInterface.(string)
-			if !ok || pageID == "" {
-				c.Set("HX-Refresh", "true")
-				return c.SendString("Refresh")
-			}
+			pageID := c.Get("Hx-App-ID")
+			c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+			app := adapter.Sessions[pageID]
 
-			// Retrieve the root object associated with the page ID
-			root := ctx.pages[pageID]
-			if root == nil {
+			if app == nil || pageID == "" {
 				c.Set("HX-Refresh", "true")
 				return c.SendString("Refresh")
 			}
+			app.Lock()
+			defer app.Unlock()
 
 			// Retrieve the element ID and event type from the request headers
 			elementID := string(c.Request().Header.Peek("Hx-Trigger"))
@@ -102,29 +131,15 @@ func (ctx *FiberKerenAdapter) Handle(handler func(*Root, *fiber.Ctx) error) func
 				return err
 			}
 
-			// Update the root object with the parsed values
+			// Update the app object with the parsed values
 			obj := map[string]Data{}
 			totalError := 0
 			for k, v := range values {
 				if len(v) > 0 {
-					elem := root.UpdateValue(k, v[0])
-					if elem == nil {
+					elem, err := app.UpdateValue(k, v[0])
+					if err != nil {
+						totalError = totalError + 1
 						continue
-					}
-					if elem.Validation != "" {
-						errs := validate.Var(v[0], elem.Validation)
-						// reset
-						elem.RemoveClass("is-valid").RemoveClass("is-invalid").Parent.RemoveChildrenWithTag("div").RemoveClass("has-validation")
-						if errs != nil {
-							message := errs.Error()
-							if elem.ErrorMessage != "" {
-								message = elem.ErrorMessage
-							}
-							elem.AddClass("is-invalid").Parent.RemoveChildrenWithTag("div").Append(root.InvalidFeedback(message)).AddClass("has-validation")
-							totalError++
-						} else {
-							elem.AddClass("is-valid").Parent.RemoveChildrenWithTag("div")
-						}
 					}
 					obj[elem.Name] = Data{
 						Value: v[0],
@@ -147,26 +162,21 @@ func (ctx *FiberKerenAdapter) Handle(handler func(*Root, *fiber.Ctx) error) func
 			if totalError > 0 {
 				// form
 
-				return Response(c, root.GetElementById(elementID))
+				return Response(c, app.GetElementById(elementID))
 			}
 
 			// Set the response content type to HTML
 
-			// Trigger the event on the root object and retrieve the event output
-			eventOutput := root.TriggerEvent(elementID, event, c.Context(), obj)
-			if len(root.PendingEvent) > 0 {
-				c.Set("HX-Trigger", strings.Join(root.PendingEvent, ","))
-				root.PendingEvent = []string{}
-			}
+			// Trigger the event on the app object and retrieve the event output
+			eventOutput := app.TriggerEvent(elementID, event, c.Context(), obj)
 			if eventOutput != nil {
 				return Response(c, eventOutput)
 			}
 			c.Set("HX-Retarget", "body")
 			c.Set("HX-Reswap", "outerHTML")
-			c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
 
-			// Build the HTML output from the root object
-			output := BuildHTML(root)
+			// Build the HTML output from the app object
+			output := BuildHTML(app)
 
 			// Return the HTML output as the response
 			return c.SendString(output)

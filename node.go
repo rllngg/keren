@@ -2,7 +2,7 @@ package keren
 
 type Node struct {
 	ID       string
-	Root     *Root
+	App      *App
 	Element  *Element
 	Parent   *Node
 	Children []*Node

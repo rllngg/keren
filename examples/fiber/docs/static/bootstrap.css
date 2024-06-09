@@ -15,7 +15,7 @@
   background-color: #fff;
   border-top: 1px solid #dee2e6;
 }
-:root,
+:app,
 [data-bs-theme="light"] {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;
@@ -203,7 +203,7 @@
   box-sizing: border-box;
 }
 @media (prefers-reduced-motion: no-preference) {
-  :root {
+  :app {
     scroll-behavior: smooth;
   }
 }
@@ -742,7 +742,7 @@ progress {
     max-width: 1320px;
   }
 }
-:root {
+:app {
   --bs-breakpoint-xs: 0;
   --bs-breakpoint-sm: 576px;
   --bs-breakpoint-md: 768px;

@@ -13,7 +13,7 @@ type Columns struct {
 	Callback func(data []string) *Element
 }
 type DataTable struct {
-	Root          *Root
+	App           *App
 	QueryResult   QueryResult
 	Columns       []Columns
 	Limit         int
@@ -23,9 +23,9 @@ type DataTable struct {
 	OnQuery       func(page Pageable) QueryResult
 }
 
-func NewDataTable(root *Root) *DataTable {
+func NewDataTable(app *App) *DataTable {
 	return &DataTable{
-		Root:    root,
+		App:     app,
 		Columns: []Columns{},
 		Limit:   10,
 		Page:    0,
@@ -47,24 +47,24 @@ func (table *DataTable) Body(body *Element) *Element {
 	// create table
 	body.RemoveChildren()
 	for _, data := range table.QueryResult.Rows {
-		trElement := table.Root.Tr()
+		trElement := Tr()
 		for _, col := range table.Columns {
-			trElement.Append(table.Root.Td(col.Callback(data)))
+			trElement.Append(Td(col.Callback(data)))
 		}
 		body.Append(trElement)
 	}
 	return body
 }
 func (table *DataTable) GetPagination() *Element {
-	return table.Root.Div(
+	return Div(
 
-		table.Root.Button("Previous", "primary").Disabled(table.Page <= 0).OnClick(func(event *Event) *Element {
+		Button("Previous", "primary").Disabled(table.Page <= 0).OnClick(func(event *Event) *Element {
 
 			table.Page = table.Page - 1
 			return table.GetTable()
 		}),
 
-		table.Root.Button("Next", "primary").Disabled(len(table.QueryResult.Rows) < table.Limit).OnClick(func(event *Event) *Element {
+		Button("Next", "primary").Disabled(len(table.QueryResult.Rows) < table.Limit).OnClick(func(event *Event) *Element {
 			table.Page = table.Page + 1
 			return table.GetTable()
 		}),
@@ -72,17 +72,17 @@ func (table *DataTable) GetPagination() *Element {
 }
 func (table *DataTable) GetTable() *Element {
 	// create table
-	theadElement := table.Root.Thead()
+	theadElement := Thead()
 	for _, data := range table.Columns {
-		theadElement.Append(table.Root.Th(data.Name))
+		theadElement.Append(Th(data.Name))
 	}
-	tbodyElement := table.Root.Tbody()
+	tbodyElement := Tbody()
 	table.QueryResult = table.OnQuery(Pageable{
 		Limit:   table.Limit,
 		Current: table.Page,
 	})
 	table.Body(tbodyElement)
-	tableElement := table.Root.Table(
+	tableElement := Table(
 		theadElement,
 		tbodyElement,
 	)
@@ -90,7 +90,7 @@ func (table *DataTable) GetTable() *Element {
 		table.RenderElement.RemoveChildren().Body(tableElement,
 			table.GetPagination())
 	} else {
-		table.RenderElement = table.Root.Div(
+		table.RenderElement = Div(
 			tableElement,
 			table.GetPagination(),
 		)
@@ -100,14 +100,14 @@ func (table *DataTable) GetTable() *Element {
 }
 func (table *DataTable) Element(triggerName string) *Element {
 	// create table
-	div := table.Root.Div(
-		table.Root.Form(
-			table.Root.Row(
-				table.Root.Col(
-					table.Root.TextInput("search", "search", "Search").Bind(&table.Filter),
+	div := Div(
+		Form(
+			Row(
+				Col(
+					TextInput("search", "search", "Search").Bind(&table.Filter),
 				).AddClass("col-md-3"),
-				table.Root.Col(
-					table.Root.Select("limit", "Limit", [][]string{
+				Col(
+					Select("limit", "Limit", [][]string{
 						{"1", "1"},
 						{"5", "5"},
 						{"10", "10"},

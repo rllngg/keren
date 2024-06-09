@@ -14,6 +14,7 @@ type Event struct {
 	Name    string
 	Request *fasthttp.RequestCtx
 	Element *Element
+	App     *App
 	Data    map[string]Data
 }
 

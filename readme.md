@@ -7,7 +7,7 @@ Keren is a UI Web Framework for Golang built on top of HTMX. 🌐 It allows you 
 This example demonstrates how to create a simple "Hello World" form using Keren:
 
 ```go
-func Hello(app *keren.Root, ctx *fiber.Ctx) error {
+func Hello(app *keren.App, ctx *fiber.Ctx) error {
 	input_name := app.Input("text", "name", "Nama").Class("form-control")
 	message := app.P("").Class("alert", "alert-success").Style("display", "none")
 	form := app.Form(

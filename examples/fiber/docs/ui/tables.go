@@ -3,12 +3,12 @@ package ui
 import (
 	"strings"
 
-	"github.com/erlanggatampan/keren"
+	. "github.com/erlanggatampan/keren"
 	"github.com/erlanggatampan/keren/examples/fiber/docs/ui/components"
 	"github.com/gofiber/fiber/v2"
 )
 
-func TableExample(app *keren.Root, c *fiber.Ctx) error {
+func TableExample(app *App, c *fiber.Ctx) error {
 	datas := [][]string{
 		{"1", "John Doe"},
 		{"2", "Jane Doe"},
@@ -22,20 +22,20 @@ func TableExample(app *keren.Root, c *fiber.Ctx) error {
 		{"10", "Dimas"},
 		{"11", "Jane Doe"},
 	}
-	table := keren.NewDataTable(app)
-	table.AddColumn("ID", func(data []string) *keren.Element {
-		return app.Text(data[0])
+	table := NewDataTable(app)
+	table.AddColumn("ID", func(data []string) *Element {
+		return Text(data[0])
 	})
-	table.AddColumn("Name", func(data []string) *keren.Element {
-		return app.Text(data[1])
+	table.AddColumn("Name", func(data []string) *Element {
+		return Text(data[1])
 	})
-	table.AddColumn("Action", func(data []string) *keren.Element {
-		return app.Button("", "primary").AddClass("btn-sm").Body(app.FeatherIcon("edit")).OnClick(func(event *keren.Event) *keren.Element {
+	table.AddColumn("Action", func(data []string) *Element {
+		return Button("", "primary").AddClass("btn-sm").Body(FeatherIcon("edit")).OnClick(func(event *Event) *Element {
 			return event.Element.Text(data[1] + " Clicked")
 		})
 	})
 
-	table.OnQuery = func(page keren.Pageable) keren.QueryResult {
+	table.OnQuery = func(page Pageable) QueryResult {
 		filtered := [][]string{}
 		totalSkip := page.Limit * page.Current
 		for _, data := range datas {
@@ -50,19 +50,19 @@ func TableExample(app *keren.Root, c *fiber.Ctx) error {
 				filtered = append(filtered, data)
 			}
 		}
-		return keren.QueryResult{
+		return QueryResult{
 			Total: len(filtered),
 			Rows:  filtered,
 		}
 	}
-	return app.Container(
+	return app.Build(
 		components.Navigation(app),
-		app.Div(
-			app.Card(
-				app.CardBody(
-					app.H1("Tables With Custom Data"),
-					app.P("This is an example of table with custom data."),
-					app.Button("Refresh", "primary").OnClick(func(event *keren.Event) *keren.Element {
+		Div(
+			Card(
+				CardBody(
+					H1("Tables With Custom Data"),
+					P("This is an example of table with custom data."),
+					Button("Refresh", "primary").OnClick(func(event *Event) *Element {
 						return event.Element.PublishEvent("table")
 					}),
 					table.Element("table"),

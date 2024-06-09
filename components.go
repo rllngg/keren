@@ -1,52 +1,55 @@
 package keren
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type NavTab struct {
 	Header  *Element
 	Content *Element
 }
 
-func (root *Root) Button(text string, variant string) *Element {
-	button := NewElement(root, "button").Class("btn btn-" + variant).SetInnerHTML(text)
+func Button(text string, variant string) *Element {
+	button := NewElement(nil, "button").Class("btn btn-" + variant).SetInnerHTML(text)
 
 	return button
 }
-func (root *Root) Input(htmlType string, name string, placeholder string, label string) *Element {
+func Input(htmlType string, name string, placeholder string, label string) *Element {
 
-	group := NewElement(root, "div").Class("form-floating")
-	input := NewElement(root, "input").Attribute("type", htmlType).Attribute("placeholder", placeholder).Class("form-control my-2")
+	group := NewElement(nil, "div").Class("form-floating")
+	input := NewElement(nil, "input").Attribute("type", htmlType).Attribute("placeholder", placeholder).Class("form-control my-2")
 	input.Attribute("name", input.ID)
 	input.SetName(name)
 	group.Append(input)
 	if label != "" {
-		group.Append(root.Label(label).Attribute("for", input.ID))
+		group.Append(Label(label).Attribute("for", input.ID))
 	}
 	return group
 }
-func (root *Root) TextInput(name string, placeholder string, label string) *Element {
-	return root.Input("text", name, placeholder, label)
+func TextInput(name string, placeholder string, label string) *Element {
+	return Input("text", name, placeholder, label)
 }
-func (root *Root) NumberInput(name string, placeholder string, label string) *Element {
-	return root.Input("number", name, placeholder, label)
+func NumberInput(name string, placeholder string, label string) *Element {
+	return Input("number", name, placeholder, label)
 }
-func (root *Root) EmailInput(name string, placeholder string, label string) *Element {
-	return root.Input("email", name, placeholder, label)
+func EmailInput(name string, placeholder string, label string) *Element {
+	return Input("email", name, placeholder, label)
 }
-func (root *Root) DateInput(name string, placeholder string, label string) *Element {
-	return root.Input("date", name, placeholder, label)
+func DateInput(name string, placeholder string, label string) *Element {
+	return Input("date", name, placeholder, label)
 }
-func (root *Root) TimeInput(name string, placeholder string, label string) *Element {
-	return root.Input("time", name, placeholder, label)
+func TimeInput(name string, placeholder string, label string) *Element {
+	return Input("time", name, placeholder, label)
 }
 
-func (root *Root) PasswordInput(name string, placeholder string, label string) *Element {
-	return root.Input("password", name, placeholder, label)
+func PasswordInput(name string, placeholder string, label string) *Element {
+	return Input("password", name, placeholder, label)
 }
-func (root *Root) Checkbox(name string, text string) *Element {
-	checkbox := root.Input("checkbox", name, text, "").Class("form-check")
+func Checkbox(name string, text string) *Element {
+	checkbox := Input("checkbox", name, text, "").Class("form-check")
 	checkbox.GetInput().Class("form-check-input")
-	checkbox.Append(root.Span(text).Class("pl-2 form-check-label"))
+	checkbox.Append(Span(text).Class("pl-2 form-check-label"))
 	checkbox.GetInput().OnRender(func(e *Element) {
 		if e.GetValue() == "true" {
 			e.Attribute("checked", "checked")
@@ -54,137 +57,134 @@ func (root *Root) Checkbox(name string, text string) *Element {
 	})
 	return checkbox
 }
-func (root *Root) Break() *Element {
-	return NewElement(root, "br")
+func Break() *Element {
+	return NewElement(nil, "br")
 }
-func (root *Root) Form(children ...*Element) *Element {
-	return NewElement(root, "form").AppendChildren(children...)
+func Form(children ...*Element) *Element {
+	return NewElement(nil, "form").AppendChildren(children...)
 }
-func (root *Root) Text(text string) *Element {
-	textComponent := NewElement(root, "span").SetInnerHTML(text)
+func Text(text string) *Element {
+	textComponent := NewElement(nil, "span").SetInnerHTML(text)
 	return textComponent
 }
-func (root *Root) Alert(text string) *Element {
-	alert := NewElement(root, "script").SetInnerHTML(`alert("` + text + `")`).Once()
+func Alert(text string) *Element {
+	alert := NewElement(nil, "script").SetInnerHTML(`alert("` + text + `")`).Once()
 	return alert
 }
-func (root *Root) H1(text string) *Element {
-	h1 := NewElement(root, "h1").SetInnerHTML(text)
+func H1(text string) *Element {
+	h1 := NewElement(nil, "h1").SetInnerHTML(text)
 	return h1
 }
-func (root *Root) H2(text string) *Element {
-	h2 := NewElement(root, "h2").SetInnerHTML(text)
+func H2(text string) *Element {
+	h2 := NewElement(nil, "h2").SetInnerHTML(text)
 	return h2
 }
-func (root *Root) H3(text string) *Element {
-	h3 := NewElement(root, "h3").SetInnerHTML(text)
+func H3(text string) *Element {
+	h3 := NewElement(nil, "h3").SetInnerHTML(text)
 	return h3
 }
-func (root *Root) H4(text string) *Element {
-	h4 := NewElement(root, "h4").SetInnerHTML(text)
+func H4(text string) *Element {
+	h4 := NewElement(nil, "h4").SetInnerHTML(text)
 	return h4
 }
-func (root *Root) H5(text string) *Element {
-	h5 := NewElement(root, "h5").SetInnerHTML(text)
+func H5(text string) *Element {
+	h5 := NewElement(nil, "h5").SetInnerHTML(text)
 	return h5
 }
-func (root *Root) H6(text string) *Element {
-	h6 := NewElement(root, "h6").SetInnerHTML(text)
+func H6(text string) *Element {
+	h6 := NewElement(nil, "h6").SetInnerHTML(text)
 	return h6
 }
-func (root *Root) P(text string) *Element {
-	p := NewElement(root, "p").SetInnerHTML(text)
+func P(text string) *Element {
+	p := NewElement(nil, "p").SetInnerHTML(text)
 	return p
 }
-func (root *Root) Span(text string) *Element {
-	span := NewElement(root, "span").SetInnerHTML(text)
+func Span(text string) *Element {
+	span := NewElement(nil, "span").SetInnerHTML(text)
 	return span
 }
-func (root *Root) Link(text string, href string) *Element {
-	a := NewElement(root, "a").SetInnerHTML(text).Attribute("href", href).Style("text-decoration", "none")
-	if root.CurrentURL == href {
-		a.Class("active")
-	}
+func Link(text string, href string) *Element {
+	a := NewElement(nil, "a").SetInnerHTML(text).Attribute("href", href).Style("text-decoration", "none")
 	return a
 }
-func (root *Root) Img(src string) *Element {
-	img := NewElement(root, "img").Attribute("src", src)
+func Img(src string) *Element {
+	img := NewElement(nil, "img").Attribute("src", src)
 	return img
 }
-func (root *Root) Ul(children ...*Element) *Element {
-	return NewElement(root, "ul").AppendChildren(children...)
+func Ul(children ...*Element) *Element {
+	return NewElement(nil, "ul").AppendChildren(children...)
 }
-func (root *Root) Ol(children ...*Element) *Element {
-	return NewElement(root, "ol").AppendChildren(children...)
+func Ol(children ...*Element) *Element {
+	return NewElement(nil, "ol").AppendChildren(children...)
 }
-func (root *Root) Li(children ...*Element) *Element {
-	return NewElement(root, "li").AppendChildren(children...)
+func Li(children ...*Element) *Element {
+	return NewElement(nil, "li").AppendChildren(children...)
 }
-func (root *Root) NavItem(children ...*Element) *Element {
-	return NewElement(root, "li").Class("nav-item").AppendChildren(children...)
+func NavItem(children ...*Element) *Element {
+	return NewElement(nil, "li").Class("nav-item").AppendChildren(children...)
 }
 
 // div
-func (root *Root) Div(children ...*Element) *Element {
-	return NewElement(root, "div").AppendChildren(children...)
+func Div(children ...*Element) *Element {
+	return NewElement(nil, "div").AppendChildren(children...)
 }
 
 // table
 
-func (root *Root) Table(children ...*Element) *Element {
-	return NewElement(root, "table").Class("table").AppendChildren(children...)
+func Table(children ...*Element) *Element {
+	return NewElement(nil, "table").Class("table").AppendChildren(children...)
 }
-func (root *Root) Thead(children ...*Element) *Element {
-	return NewElement(root, "thead").AppendChildren(children...)
+func Thead(children ...*Element) *Element {
+	return NewElement(nil, "thead").AppendChildren(children...)
 }
-func (root *Root) Tbody(children ...*Element) *Element {
-	return NewElement(root, "tbody").AppendChildren(children...)
+func Tbody(children ...*Element) *Element {
+	return NewElement(nil, "tbody").AppendChildren(children...)
 }
-func (root *Root) Tr(children ...*Element) *Element {
-	return NewElement(root, "tr").AppendChildren(children...)
+func Tr(children ...*Element) *Element {
+	return NewElement(nil, "tr").AppendChildren(children...)
 }
-func (root *Root) Th(text string) *Element {
-	return NewElement(root, "th").SetInnerHTML(text)
+func Th(text string) *Element {
+	return NewElement(nil, "th").SetInnerHTML(text)
 }
-func (root *Root) Td(children ...*Element) *Element {
-	return NewElement(root, "td").AppendChildren(children...)
+func Td(children ...*Element) *Element {
+	return NewElement(nil, "td").AppendChildren(children...)
 }
 
-func (root *Root) Card(children ...*Element) *Element {
-	return NewElement(root, "div").Class("card").AppendChildren(children...)
+func Card(children ...*Element) *Element {
+	return NewElement(nil, "div").Class("card").AppendChildren(children...)
 }
-func (root *Root) CardBody(children ...*Element) *Element {
-	return NewElement(root, "div").Class("card-body").AppendChildren(children...)
+func CardBody(children ...*Element) *Element {
+	return NewElement(nil, "div").Class("card-body").AppendChildren(children...)
 }
-func (root *Root) Row(children ...*Element) *Element {
-	return NewElement(root, "div").Class("row").AppendChildren(children...)
+func Row(children ...*Element) *Element {
+	return NewElement(nil, "div").Class("row").AppendChildren(children...)
 }
-func (root *Root) Col(children ...*Element) *Element {
-	return NewElement(root, "div").Class("col").AppendChildren(children...)
+func Col(children ...*Element) *Element {
+	return NewElement(nil, "div").Class("col").AppendChildren(children...)
 }
-func (root *Root) ContainerFluid(children ...*Element) *Element {
-	return NewElement(root, "div").Class("container-fluid").AppendChildren(children...)
+func ContainerFluid(children ...*Element) *Element {
+	return NewElement(nil, "div").Class("container-fluid").AppendChildren(children...)
 }
-func (root *Root) Btn(children ...*Element) *Element {
-	return NewElement(root, "button").AppendChildren(children...)
+func Btn(children ...*Element) *Element {
+	return NewElement(nil, "button").AppendChildren(children...)
 }
-func (root *Root) A(children ...*Element) *Element {
-	return NewElement(root, "a").AppendChildren(children...)
+func A(children ...*Element) *Element {
+	return NewElement(nil, "a").AppendChildren(children...)
 }
-func (root *Root) Nav(children ...*Element) *Element {
-	return NewElement(root, "nav").AppendChildren(children...)
+func Nav(children ...*Element) *Element {
+	return NewElement(nil, "nav").AppendChildren(children...)
 }
-func (root *Root) Navbar(brand *Element, children ...*Element) *Element {
-	nav := root.Nav().Class("navbar navbar-expand-lg")
-	navBrand := root.Div(brand).Class("navbar-brand")
-	navbarCollapse := root.Div(
+func Navbar(brand *Element, children ...*Element) *Element {
+	nav := Nav().Class("navbar navbar-expand-lg")
+	navBrand := Div(brand).Class("navbar-brand")
+	navbarCollapse := Div(
 		children...,
 	).Class("collapse navbar-collapse")
-	mobileBtn := root.Btn(
-		root.Span("").Class("navbar-toggler-icon"),
+	mobileBtn := Btn(
+		Span("").Class("navbar-toggler-icon"),
 	).Class("navbar-toggler").Attr("data-bs-toggle", "collapse").Attr("data-bs-target", "#"+navbarCollapse.ID).Attr("aria-controls", "navbarSupportedContent").Attr("aria-expanded", "false").Attr("aria-label", "Toggle navigation")
 	return nav.AppendChildren(
-		root.ContainerFluid(
+		ContainerFluid(
 			navBrand,
 			mobileBtn,
 			navbarCollapse,
@@ -192,30 +192,30 @@ func (root *Root) Navbar(brand *Element, children ...*Element) *Element {
 	)
 }
 
-func (root *Root) Select(name string, label string, options [][]string) *Element {
-	group := NewElement(root, "div").Class("form-floating")
-	selectElement := NewElement(root, "select")
+func Select(name string, label string, options [][]string) *Element {
+	group := NewElement(nil, "div").Class("form-floating")
+	selectElement := NewElement(nil, "select")
 	selectElement.Class("form-select")
 	selectElement.SetName(name)
 	for _, option := range options {
 		selectElement.AppendChildren(
-			root.Option(option[0], option[1]),
+			Option(option[0], option[1]),
 		)
 	}
 	selectElement.Attr("name", selectElement.ID)
 	group.Append(selectElement)
-	group.Append(root.Label(label).Attr("for", selectElement.ID))
+	group.Append(Label(label).Attr("for", selectElement.ID))
 	return group
 }
-func (root *Root) Option(value string, text string) *Element {
-	return NewElement(root, "option").Text(text).SetValue(value).OnRender(func(e *Element) {
+func Option(value string, text string) *Element {
+	return NewElement(nil, "option").Text(text).SetValue(value).OnRender(func(e *Element) {
 		if e.Parent.GetValue() == e.GetValue() {
 			e.Attribute("selected", "selected")
 		}
 	})
 }
-func (root *Root) TextArea(name string, label string) *Element {
-	elem := NewElement(root, "textarea").Class("form-control")
+func TextArea(name string, label string) *Element {
+	elem := NewElement(nil, "textarea").Class("form-control")
 	elem.Attribute("name", elem.ID)
 	elem.SetName(name)
 	elem.Attribute("rows", "10")
@@ -223,56 +223,56 @@ func (root *Root) TextArea(name string, label string) *Element {
 		e.TextContent = e.GetValue()
 	})
 
-	group := NewElement(root, "div").Class("form-floating")
+	group := NewElement(nil, "div").Class("form-floating")
 	group.Append(elem)
-	group.Append(root.Label(label).Attribute("for", elem.ID))
+	group.Append(Label(label).Attribute("for", elem.ID))
 
 	return group
 }
 
-func (root *Root) Label(text string) *Element {
-	return NewElement(root, "label").Text(text)
+func Label(text string) *Element {
+	return NewElement(nil, "label").Text(text)
 }
-func (root *Root) FileInput() *Element {
-	return root.Input("file", "file", "", "").Class("")
+func FileInput() *Element {
+	return Input("file", "file", "", "").Class("")
 }
-func (root *Root) AlertMessage(message string, variant string) *Element {
-	return NewElement(root, "div").Class("alert alert-" + variant).SetInnerHTML(message)
+func AlertMessage(message string, variant string) *Element {
+	return NewElement(nil, "div").Class("alert alert-" + variant).SetInnerHTML(message)
 }
 
 // font awesome support
-func (root *Root) FaIcon(icon string) *Element {
-	return NewElement(root, "i").Class("fa-regular fa-" + icon)
+func FaIcon(icon string) *Element {
+	return NewElement(nil, "i").Class("fa-regular fa-" + icon)
 }
-func (root *Root) FeatherIcon(icon string) *Element {
-	return NewElement(root, "i").Attr("data-feather", icon)
-}
-
-func (root *Root) Flex(children ...*Element) *Element {
-	return NewElement(root, "div").Class("d-flex gap-2").AppendChildren(children...)
-}
-func (root *Root) InvalidFeedback(text string) *Element {
-	return NewElement(root, "div").Class("invalid-feedback").SetInnerHTML(text)
+func FeatherIcon(icon string) *Element {
+	return NewElement(nil, "i").Attr("data-feather", icon)
 }
 
-func (root *Root) Tab(head *Element, content *Element) *NavTab {
+func Flex(children ...*Element) *Element {
+	return NewElement(nil, "div").Class("d-flex gap-2").AppendChildren(children...)
+}
+func InvalidFeedback(text string) *Element {
+	return NewElement(nil, "div").Class("invalid-feedback").SetInnerHTML(text)
+}
+
+func Tab(head *Element, content *Element) *NavTab {
 	return &NavTab{
 		Header:  head,
 		Content: content,
 	}
 }
-func (root *Root) NavTabs(tabs ...*NavTab) *Element {
-	ul := NewElement(root, "ul").Class("nav nav-tabs").Attribute("role", "tablist")
-	div := NewElement(root, "div").Class("tab-content")
+func NavTabs(tabs ...*NavTab) *Element {
+	ul := NewElement(nil, "ul").Class("nav nav-tabs").Attribute("role", "tablist")
+	div := NewElement(nil, "div").Class("tab-content")
 	for i, tab := range tabs {
-		btn := root.Btn().Class("nav-link").Body(tab.Header).Attr("data-bs-toggle", "tab").Attr("role", "tab").Attr("type", "button").Attr("aria-selected", "false")
-		ul.Append(root.Li(btn).Class("nav-item").Attr("role", "presentation"))
+		btn := Btn().Class("nav-link").Body(tab.Header).Attr("data-bs-toggle", "tab").Attr("role", "tab").Attr("type", "button").Attr("aria-selected", "false")
+		ul.Append(Li(btn).Class("nav-item").Attr("role", "presentation"))
 
-		content := root.Div(tab.Content).Class("tab-pane fade").Attr("role", "tabpanel")
+		content := Div(tab.Content).Class("tab-pane fade").Attr("role", "tabpanel")
 		if i == 0 {
 			// btn.Class("active").Attr("aria-selected", "true")
 			// content.Class("active show")
-			content.Append(root.Script(`
+			content.Append(Script(`
 				document.getElementById("` + tab.Header.ID + `").click()`))
 		}
 		div.Append(content)
@@ -280,35 +280,54 @@ func (root *Root) NavTabs(tabs ...*NavTab) *Element {
 
 	}
 
-	return root.Div(ul, div).Class("nav-tabs")
+	return Div(ul, div).Class("nav-tabs")
 }
-func (root *Root) Modal(title string, body *Element, footer *Element) *Element {
-	modal := root.Div(
-		root.Div(
-			root.Div(
-				root.Div(
-					root.H5(title).Class("modal-title"),
-					root.Btn().Class("btn-close").Attr("data-bs-dismiss", "modal").Attr("aria-label", "Close").Attr("type", "button"),
+func Modal(title string, body *Element, footer *Element) *Element {
+	modal := Div(
+		Div(
+			Div(
+				Div(
+					H5(title).Class("modal-title"),
+					Btn().Class("btn-close").Attr("data-bs-dismiss", "modal").Attr("aria-label", "Close").Attr("type", "button"),
 				).Class("modal-header"),
-				root.Div(body).Class("modal-body"),
+				Div(body).Class("modal-body"),
 			).Class("modal-content"),
 		).Class("modal-dialog"),
 	).Class("modal fade").Attr("tabindex", "-1").Attr("role", "dialog").Attr("aria-hidden", "false")
-	return modal.Append(root.Script(`
+	return modal.Append(Script(`
 		let modal_` + strings.Split(modal.ID, "-")[1] + ` = new bootstrap.Modal(document.getElementById("` + modal.ID + `"))
 		modal_` + strings.Split(modal.ID, "-")[1] + `.show()
 	`))
 }
-func (root *Root) Script(script string) *Element {
-	return NewElement(root, "script").Attr("type", "text/javascript").Text(script)
+func Script(script string) *Element {
+	return NewElement(nil, "script").Attr("type", "text/javascript").Text(script)
 }
-func (root *Root) Image(src string) *Element {
-	return NewElement(root, "img").Attr("src", src)
+func Image(src string) *Element {
+	return NewElement(nil, "img").Attr("src", src)
 }
-func (root *Root) Video(src string) *Element {
-	return NewElement(root, "video").Attr("src", src).Attr("controls", "true")
+func Video(src string) *Element {
+	return NewElement(nil, "video").Attr("src", src).Attr("controls", "true")
 }
 
-func (root *Root) Audio(src string) *Element {
-	return NewElement(root, "audio").Attr("src", src).Attr("controls", "true")
+func Audio(src string) *Element {
+	return NewElement(nil, "audio").Attr("src", src).Attr("controls", "true")
+}
+
+func ListView[T any](datas *[]T, fn func(index int, data interface{}) *Element) *Element {
+	elem := Div()
+	elem.HookOnRender = func(element *Element) {
+		elem.RemoveChildren()
+		for index, data := range *datas {
+			elem.Append(fn(index, data))
+			fmt.Println("Called")
+			fmt.Println("Total Children", len(elem.Children))
+		}
+	}
+
+	return elem
+}
+func Func(fn func(*Element)) *Element {
+	elem := Div()
+	elem.HookOnRender = fn
+	return elem
 }

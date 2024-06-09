@@ -1,35 +1,35 @@
 package keren
 
-func BuildHTML(root *Root) string {
-	return HTMLTag(root.Body, false)
+func BuildHTML(app *App) string {
+	return HTMLTag(app.Body, false)
 
 }
-func HTMLTag(node *Node, isChildren bool) string {
+func HTMLTag(element *Element, isChildren bool) string {
 	result := ""
 	endTag := ""
 
 	if true {
 		// join attributes with space
 		attributes := ""
-		node.Element.CallOnRender()
+		element.CallOnRender()
 
-		endTag = "</" + node.Element.Tag + ">"
+		endTag = "</" + element.Tag + ">"
 
-		for key, value := range *node.Element.Attributes {
+		for key, value := range *element.Attributes {
 			attributes += key + "='" + value + "' "
 		}
 		classes := ""
-		node.Element.ShownLimit -= 1
-		for i, class := range node.Element.Classes {
+		element.ShownLimit -= 1
+		for i, class := range element.Classes {
 			if i > 0 {
 				classes += " "
 			}
 			classes += class
 		}
 		style := ""
-		if len(node.Element.Styles) > 0 {
+		if len(element.Styles) > 0 {
 			style = `style="`
-			for key, value := range node.Element.Styles {
+			for key, value := range element.Styles {
 				style += key + ":" + value + ";"
 			}
 			style += `"`
@@ -37,22 +37,22 @@ func HTMLTag(node *Node, isChildren bool) string {
 		if classes != "" {
 			attributes += `class="` + classes + `" `
 		}
-		value := node.Element.GetValue()
+		value := element.GetValue()
 		if value != "" {
 			attributes += `value="` + value + `" `
 		}
 
-		result += `<` + node.Element.Tag + ` id="` + node.Element.ID + `" ` + style + ` ` + attributes + `>`
-		if node.Element.TextContent != "" {
-			result += node.Element.TextContent
+		result += `<` + element.Tag + ` id="` + element.ID + `" ` + style + ` ` + attributes + `>`
+		if element.TextContent != "" {
+			result += element.TextContent
 		}
 
 	}
-	if !isChildren && node.Element.Root.Title != "" {
-		result += `<script>document.title = "` + node.Element.Root.Title + `" </script>`
-		node.Element.Root.Title = ""
+	if !isChildren && element.App.CurrentTitle != "" {
+		result += `<script>document.title = "` + element.App.CurrentTitle + `" </script>`
+		element.App.CurrentTitle = ""
 	}
-	for _, child := range node.Children {
+	for _, child := range element.Children {
 		result += HTMLTag(child, true)
 	}
 	result += endTag
