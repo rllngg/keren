@@ -19,3 +19,23 @@ func GettingStarted(app *App, ctx *fiber.Ctx) error {
 	)
 
 }
+
+type InputData struct {
+	Name string
+}
+
+func Demo(app *App, ctx *fiber.Ctx) error {
+	input := InputData{Name: "demo"}
+	return app.Build(
+		Div(
+			H1("Keren UI"),
+			Div().SetName("Message"),
+			Form(
+				TextInput("name", "Name", "Input Name").Bind(&input.Name).Validate("required, min=3", " Please Input Valid Name"),
+				Button("Submit", "primary"),
+			).Class("my-2").OnSubmit(func(event *Event) *Element {
+				return event.App.GetElementById("Message").AddClass("alert alert-success my-2").Text("Hello " + input.Name)
+			}),
+		).Style("width", "300px").Class("mx-auto", "mt-4"),
+	)
+}

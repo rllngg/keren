@@ -29,6 +29,7 @@ func main() {
 
 	fiber.All("/example-bottom", kerenFiber.Handle(ui.Hello))
 	fiber.All("/forms-inputs-button", kerenFiber.Handle(ui.Hello))
+	fiber.All("/demo", kerenFiber.Handle(ui.Demo))
 
 	//
 	fiber.Listen(":3000")

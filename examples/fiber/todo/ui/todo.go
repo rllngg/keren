@@ -54,8 +54,8 @@ func TodoApp(app *App, c *fiber.Ctx) error {
 				newTodo.ID = Identifier()
 				newTodo.Name = ""
 				// Returning nil to force render entire page
-				// return nil
-				return event.Element.App.GetElementById("list-todo")
+				return nil
+				//return event.Element.App.GetElementById("list-todo")
 
 			}),
 

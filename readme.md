@@ -5,30 +5,29 @@ Keren is a UI Web Framework for Golang built on top of HTMX. 🌐 It allows you 
 ### Hello World Form 🔐
 
 This example demonstrates how to create a simple "Hello World" form using Keren:
+```go 
+type InputData struct {
+	Name string
+}
 
-```go
-func Hello(app *keren.App, ctx *fiber.Ctx) error {
-	input_name := app.Input("text", "name", "Nama").Class("form-control")
-	message := app.P("").Class("alert", "alert-success").Style("display", "none")
-	form := app.Form(
-		message,
-		app.P("Enter your name:"),
-		input_name,
-		app.Button("Submit").Class("btn", "btn-primary", "mt-4", "w-100"),
-	).OnSubmit(func(event *keren.Event) *keren.Element {
-
-		return message.SetInnerHTML("Hello, "+input_name.Value).Style("display", "block")
-	})
-	app.Container(
-		app.Div(
-			app.H1("Keren UI"),
-			form,
+func Demo(app *App, ctx *fiber.Ctx) error {
+	input := InputData{Name: "demo"}
+	return app.Build(
+		Div(
+			H1("Keren UI"),
+			Div().SetName("Message"),
+			Form(
+				TextInput("name", "Name", "Input Name").Bind(&input.Name).Validate("required, min=3", " Please Input Valid Name"),
+				Button("Submit", "primary"),
+			).Class("my-2").OnSubmit(func(event *Event) *Element {
+				return event.App.GetElementById("Message").AddClass("alert alert-success my-2").Text("Hello " + input.Name)
+			}),
 		).Style("width", "300px").Class("mx-auto", "mt-4"),
 	)
-	return nil
 }
 
 ```
+
 
 ![Hello World](https://github.com/erlanggatampan/keren/blob/main/image/readme/1715015245996.png)
 ## Keren UI 🚀
@@ -36,7 +35,7 @@ func Hello(app *keren.App, ctx *fiber.Ctx) error {
 
 // TODO: Add instructions for installation and setup
 
-1. Install Keren 🚀
+1. Install Keren 🚀 
 
 ```
 go get github.com/erlanggatampan/keren
